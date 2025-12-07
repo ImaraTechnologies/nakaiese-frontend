@@ -67,5 +67,73 @@
     "error_generic": "L'inscription a échoué. Veuillez réessayer.",
     "already_have_account": "Vous avez déjà un compte ?",
     "sign_in": "Se connecter"
+  },
+  "WhyChooseUs": {
+    "title": "Pourquoi choisir Nakiese ?",
+    "subtitle": "Découvrez l'essence vibrante de la vie africaine authentique avec une plateforme fondée sur la confiance, la qualité et la commodité.",
+    "features": {
+      "best_price_title": "Meilleur prix garanti",
+      "best_price_desc": "Nous garantissons les tarifs les plus compétitifs pour vos séjours, en nous alignant sur tout prix inférieur trouvé.",
+      "locations_title": "Lieux triés sur le volet",
+      "locations_desc": "Chaque hôtel et restaurant est vérifié personnellement pour s'assurer qu'il répond à notre standard d'excellence.",
+      "secure_title": "Réservation sécurisée",
+      "secure_desc": "Vos données sont protégées par une sécurité de niveau entreprise. Réservez en toute confiance et tranquillité d'esprit.",
+      "support_title": "Assistance locale 24/7",
+      "support_desc": "Notre équipe est disponible 24h/24 pour vous assister, de l'arrivée au départ."
+    }
+  },
+  "SignInBanner": {
+    "title_part1": "Connectez-vous,",
+    "title_part2": "économisez",
+    "description": "Inscrivez-vous pour une meilleure expérience et économisez sur votre prochain achat.",
+    "signin_btn": "Se connecter",
+    "register_link": "S'inscrire"
+  },
+  "Explorer": {
+    "title": "Explorer par propriété",
+    "subtitle": "Des expériences sur mesure pour chaque voyageur.",
+    "view_all": "Voir toutes les catégories",
+    "hotels": {
+      "title": "Hôtels",
+      "subtitle": "Trouvez votre sanctuaire idéal.",
+      "count": "150+ Séjours",
+      "action": "Réserver une chambre"
+    },
+    "restaurants": {
+      "title": "Restaurants",
+      "subtitle": "Savourez des saveurs africaines authentiques.",
+      "count": "80+ Lieux de restauration",
+      "action": "Réserver une table"
+    }
+  },
+  "Testimonials": {
+    "title": "Adoré par les voyageurs",
+    "subtitle": "Ne nous croyez pas sur parole. Découvrez ce que les aventuriers du monde entier disent de leur expérience Nakiese.",
+    "reviews": {
+      "review_1": {
+        "name": "Sarah Jenkins",
+        "location": "Royaume-Uni",
+        "text": "Nakiese a rendu notre lune de miel à Zanzibar absolument magique. L'hôtel recommandé était parfait et la réservation sans accroc."
+      },
+      "review_2": {
+        "name": "David Okafor",
+        "location": "Nigéria",
+        "text": "Enfin une plateforme qui comprend le luxe africain. J'ai réservé un dîner d'affaires via leur outil et c'était impeccable."
+      },
+      "review_3": {
+        "name": "Elena Rodriguez",
+        "location": "Espagne",
+        "text": "L'équipe d'assistance 24/7 m'a aidé à modifier ma réservation à la dernière minute sans souci. Recommandé pour la tranquillité d'esprit !"
+      }
+    }
+  },
+  "Newsletter": {
+    "title": "Débloquez des économies exclusives",
+    "desc_part1": "Inscrivez-vous à notre newsletter et obtenez ",
+    "desc_highlight": "10 % de réduction",
+    "desc_part2": " sur votre première réservation, plus des offres secrètes.",
+    "placeholder": "Entrez votre adresse e-mail",
+    "button": "S'abonner",
+    "disclaimer": "Jamais de spam. Désabonnez-vous à tout moment."
   }
 }

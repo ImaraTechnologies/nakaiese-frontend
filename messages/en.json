@@ -67,5 +67,73 @@
     "error_generic": "Registration failed. Please try again.",
     "already_have_account": "Already have an account?",
     "sign_in": "Sign In"
+  },
+  "WhyChooseUs": {
+    "title": "Why Choose Nakiese?",
+    "subtitle": "Experience the vibrant essence of authentic African living with a platform built on trust, quality, and convenience.",
+    "features": {
+      "best_price_title": "Best Price Guarantee",
+      "best_price_desc": "We ensure you get the most competitive rates for African stays, matching any lower price you find.",
+      "locations_title": "Handpicked Locations",
+      "locations_desc": "Every hotel and restaurant is personally verified to ensure it meets our 'Gateway to the Exceptional' standard.",
+      "secure_title": "Secure Booking",
+      "secure_desc": "Your data is protected with enterprise-grade security. Book with confidence and peace of mind.",
+      "support_title": "24/7 Local Support",
+      "support_desc": "Our team is available around the clock to assist you, from check-in to check-out."
+    }
+  },
+  "SignInBanner": {
+    "title_part1": "Sign in,",
+    "title_part2": "save money",
+    "description": "Register yourself for a better experience and save money on your next purchase.",
+    "signin_btn": "Sign in",
+    "register_link": "Register"
+  },
+  "Explorer": {
+    "title": "Explore by Property",
+    "subtitle": "Curated experiences for every traveler.",
+    "view_all": "View all categories",
+    "hotels": {
+      "title": "Hotels",
+      "subtitle": "Find your perfect sanctuary.",
+      "count": "150+ Stays",
+      "action": "Book a Room"
+    },
+    "restaurants": {
+      "title": "Restaurants",
+      "subtitle": "Savor authentic African flavors.",
+      "count": "80+ Dining Spots",
+      "action": "Reserve a Table"
+    }
+  },
+  "Testimonials": {
+    "title": "Loved by Travelers",
+    "subtitle": "Don't just take our word for it. See what adventurers from around the world are saying about their Nakiese experience.",
+    "reviews": {
+      "review_1": {
+        "name": "Sarah Jenkins",
+        "location": "United Kingdom",
+        "text": "Nakiese made our honeymoon to Zanzibar absolutely magical. The hotel recommendation was spot on, and the booking process was seamless."
+      },
+      "review_2": {
+        "name": "David Okafor",
+        "location": "Nigeria",
+        "text": "Finally, a platform that truly understands African luxury. I booked a business dinner through their restaurant finder and it was impeccable."
+      },
+      "review_3": {
+        "name": "Elena Rodriguez",
+        "location": "Spain",
+        "text": "The 24/7 support team helped me change my reservation last minute without any hassle. Highly recommended for peace of mind!"
+      }
+    }
+  },
+  "Newsletter": {
+    "title": "Unlock Exclusive Savings",
+    "desc_part1": "Join our newsletter and get ",
+    "desc_highlight": "10% off",
+    "desc_part2": " your first booking, plus secret deals sent to your inbox.",
+    "placeholder": "Enter your email address",
+    "button": "Subscribe",
+    "disclaimer": "No spam, ever. Unsubscribe anytime."
   }
 }
