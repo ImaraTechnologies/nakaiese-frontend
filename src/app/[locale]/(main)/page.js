@@ -12,18 +12,24 @@ const items = [
   { name: "Sydney", image: "/banner.jpg" },
   { name: "Rome", image: "/banner.jpg" },
 ]
+
+const cardData = [
+  { title: "Item 1" },
+  { title: "Item 2" },
+  { title: "Item 3" },
+  { title: "Item 4" },
+  { title: "Item 5" },
+  { title: "Item 6" },
+];
 export default function Home() {
   return (
-    <>
+    <main>
       <Hero />
       <Carousel items={items} />
       <Container>
         <h2 className="text-2xl font-bold mb-6">Featured Properties</h2>
 
         <Row gap={4} cols={1} md={3} lg={5}>
-
-          {/* Just repeat your cards. They will auto-flow into the grid. */}
-          {/* Ensure span is 1, so it takes up 1 slot in the 5-slot grid */}
 
           <Col span={1}><Card title="Item 1" /></Col>
           <Col span={1}><Card title="Item 2" /></Col>
@@ -35,6 +41,6 @@ export default function Home() {
 
         </Row>
       </Container>
-    </>
+    </main>
   );
 }
