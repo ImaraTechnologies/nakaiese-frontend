@@ -89,10 +89,7 @@ const Navbar = () => {
               icon={<Heart className='w-4 h-4' />}
               onClick={() => router.push('/wishlist')}
             />
-            <IconButton
-              icon={<BiCart className='w-4 h-4' />}
-              onClick={() => router.push('/cart')}
-            />
+
 
             {/* CONDITIONAL RENDERING */}
             {isAuthenticated ? (
