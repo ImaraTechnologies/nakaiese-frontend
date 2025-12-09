@@ -135,5 +135,93 @@
     "placeholder": "Enter your email address",
     "button": "Subscribe",
     "disclaimer": "No spam, ever. Unsubscribe anytime."
+  },
+  "Profile": {
+    "title": "Personal Details",
+    "subtitle": "Update your information and manage your account details.",
+    "labels": {
+      "first_name": "First Name",
+      "last_name": "Last Name",
+      "email": "Email Address",
+      "phone_no": "Phone Number",
+      "dob": "Date of Birth",
+      "nationality": "Nationality",
+      "gender": "Gender"
+    },
+    "placeholders": {
+      "first_name": "e.g. John",
+      "last_name": "e.g. Doe",
+      "phone_no": "+1234567890"
+    },
+    "options": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "prefer_not_to_say": "Prefer not to say"
+    },
+    "actions": {
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "Cancel",
+      "locked": "Locked"
+    },
+    "validation": {
+      "required": "Required",
+      "invalid_email": "Invalid email",
+      "future_date": "Future dates are not allowed",
+      "min_age": "You must be at least 16 years old"
+    }
+  },
+  "Security": {
+    "title": "Security Settings",
+    "subtitle": "Manage your password, sessions, and account security.",
+    "change_password": {
+      "title": "Password",
+      "desc": "Change your password regularly to keep your account secure.",
+      "modal_title": "Change Password"
+    },
+    "placeholders": {
+        "enter_password": "Enter your password"
+    },
+    "two_factor": {
+      "title": "2FA Authentication",
+      "desc": "Add an extra layer of security to your account."
+    },
+    "sessions": {
+      "title": "Active Sessions",
+      "desc": "Log out from all other devices and browsers.",
+      "confirm": "Are you sure you want to log out from all devices?"
+    },
+    "delete_account": {
+      "title": "Delete Account",
+      "desc": "Permanently remove your account and data.",
+      "modal_title": "Delete Account",
+      "warning_title": "Are you absolutely sure?",
+      "warning_desc": "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
+    },
+    "labels": {
+      "current_password": "Current Password",
+      "new_password": "New Password",
+      "re_new_password": "Confirm New Password",
+      "confirm_password": "Confirm Password to Delete"
+    },
+    "actions": {
+      "change": "Change",
+      "setup": "Setup",
+      "logout_all": "Log out all",
+      "delete": "Delete Account",
+      "save": "Update Password",
+      "cancel": "Cancel",
+      "confirm_delete": "Delete Account"
+    },
+    "validation": {
+      "required": "Required",
+      "min_length": "Must be at least 8 characters",
+      "password_match": "Passwords must match"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please check your password.",
+      "password_incorrect": "Incorrect password provided."
+    }
   }
 }

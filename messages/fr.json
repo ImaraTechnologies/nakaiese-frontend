@@ -135,5 +135,93 @@
     "placeholder": "Entrez votre adresse e-mail",
     "button": "S'abonner",
     "disclaimer": "Jamais de spam. Désabonnez-vous à tout moment."
+  },
+  "Profile": {
+    "title": "Détails Personnels",
+    "subtitle": "Mettez à jour vos informations et gérez les détails de votre compte.",
+    "labels": {
+      "first_name": "Prénom",
+      "last_name": "Nom",
+      "email": "Adresse E-mail",
+      "phone_no": "Numéro de téléphone",
+      "dob": "Date de naissance",
+      "nationality": "Nationalité",
+      "gender": "Genre"
+    },
+    "placeholders": {
+      "first_name": "ex. Jean",
+      "last_name": "ex. Dupont",
+      "phone_no": "+33..."
+    },
+    "options": {
+      "male": "Homme",
+      "female": "Femme",
+      "other": "Autre",
+      "prefer_not_to_say": "Préfère ne pas dire"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "locked": "Verrouillé"
+    },
+    "validation": {
+      "required": "Requis",
+      "invalid_email": "Email invalide",
+      "future_date": "Les dates futures ne sont pas autorisées",
+      "min_age": "Vous devez avoir au moins 16 ans"
+    }
+  },
+  "Security": {
+    "title": "Paramètres de sécurité",
+    "subtitle": "Gérez votre mot de passe, vos sessions et la sécurité de votre compte.",
+    "change_password": {
+      "title": "Mot de passe",
+      "desc": "Changez votre mot de passe régulièrement pour assurer la sécurité de votre compte.",
+      "modal_title": "Changer le mot de passe"
+    },
+    "placeholders": {
+        "enter_password": "Entrez votre mot de passe"
+    },
+    "two_factor": {
+      "title": "Authentification 2FA",
+      "desc": "Ajoutez une couche de sécurité supplémentaire à votre compte."
+    },
+    "sessions": {
+      "title": "Sessions actives",
+      "desc": "Déconnectez-vous de tous les autres appareils et navigateurs.",
+      "confirm": "Êtes-vous sûr de vouloir vous déconnecter de tous les appareils ?"
+    },
+    "delete_account": {
+      "title": "Supprimer le compte",
+      "desc": "Supprimez définitivement votre compte et vos données.",
+      "modal_title": "Supprimer le compte",
+      "warning_title": "Êtes-vous absolument sûr ?",
+      "warning_desc": "Cette action est irréversible. Cela supprimera définitivement votre compte et effacera vos données de nos serveurs."
+    },
+    "labels": {
+      "current_password": "Mot de passe actuel",
+      "new_password": "Nouveau mot de passe",
+      "re_new_password": "Confirmer le nouveau mot de passe",
+      "confirm_password": "Confirmer le mot de passe pour supprimer"
+    },
+    "actions": {
+      "change": "Modifier",
+      "setup": "Configurer",
+      "logout_all": "Tout déconnecter",
+      "delete": "Supprimer le compte",
+      "save": "Mettre à jour",
+      "cancel": "Annuler",
+      "confirm_delete": "Supprimer le compte"
+    },
+    "validation": {
+      "required": "Requis",
+      "min_length": "Doit contenir au moins 8 caractères",
+      "password_match": "Les mots de passe doivent correspondre"
+    },
+    "errors": {
+      "generic": "Une erreur s'est produite. Veuillez vérifier votre mot de passe.",
+      "password_incorrect": "Mot de passe incorrect."
+    }
   }
 }
