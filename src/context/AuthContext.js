@@ -1,43 +1,59 @@
 "use client";
 
-import { createContext, useContext} from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query"; // <--- Import React Query
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { loginUser, logoutUser, registerUser } from "@/services/authService";
-import useAuthStore from "@/store/useAuthStore";
+
+
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider = ({ children, initialUser }) => {
     const router = useRouter();
     const queryClient = useQueryClient();
 
-    // Zustand Store Access
-    const { user, setAuth, logout: performClientLogout } = useAuthStore();
+    // 1. Initialize State
+    const [user, setUser] = useState(initialUser);
 
+    useEffect(() => {
+        setUser(initialUser);
+    }, [initialUser]);
+
+    // =================================================================
+    // LOGIN
+    // =================================================================
     const loginMutation = useMutation({
-        mutationFn: loginUser, // The service function
+        mutationFn: loginUser,
         onSuccess: (data) => {
-            // 1. Update Zustand (Client State)
-            setAuth(data.access, data.refresh);
+            // A. Force Next.js to re-run the RootLayout (verifying the new cookie)
+            router.refresh(); 
+
+            if (data?.user) {
+                setUser(data.user);
+            }
             
-            // 3. Navigate
-            router.push("/dashboard"); // Or wherever you want to go
+            // B. Then navigate
+            router.push("/");
         },
         onError: (error) => {
             console.error("Login Failed:", error);
-            // You can handle toasts here or in the UI component
         }
     });
 
     // =================================================================
-    // 2. REGISTER MUTATION
+    // REGISTER
     // =================================================================
     const registerMutation = useMutation({
         mutationFn: registerUser,
         onSuccess: (data) => {
-            setAuth(data.access, data.refresh);
-            router.push("/dashboard");
+
+            if (data?.user) {
+                setUser(data.user);
+            }
+            // If registration auto-logs in (sets cookies), we need to refresh
+            router.refresh();
+            router.push("/");
         },
         onError: (error) => {
             console.error("Registration Failed:", error);
@@ -45,48 +61,38 @@ export const AuthProvider = ({ children }) => {
     });
 
     // =================================================================
-    // 3. LOGOUT MUTATION
+    // LOGOUT
     // =================================================================
     const logoutMutation = useMutation({
         mutationFn: async () => {
-            const { refreshToken } = useAuthStore.getState();
-            if (refreshToken) {
-                return await logoutUser(refreshToken);
-            }
+            return await logoutUser();
         },
         onSuccess: () => {
-            // Clear Zustand and Queries
-            performClientLogout();
-            queryClient.clear(); // Clears all cached data (security best practice)
-            router.push("/login");
+            // 1. Clear Client Cache
+            queryClient.clear();
+            
+            // 2. Optimistic Update (Instant feedback)
+            setUser(null); 
+            
+            // 3. Refresh Server Component to ensure cookies are gone server-side too
+            router.refresh();
         },
         onError: (err) => {
-            console.error("Logout failed on server, forcing client logout", err);
-            // Even if server fails, we log out the client
-            performClientLogout();
-            router.push("/login");
+            console.error("Logout failed, forcing client logout", err);
+            setUser(null);
         }
     });
 
-    // =================================================================
-    // 4. DERIVED STATE
-    // =================================================================
-    // Combined loading state for UI spinners
     const isLoading = loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
 
     return (
-        <AuthContext.Provider 
-            value={{ 
-                user, 
-                // We pass 'isLoading' so the UI knows if ANY auth action is happening
-                isLoading, 
-                
-                // We pass 'mutateAsync' so the UI can use await login(creds)
-                login: loginMutation.mutateAsync, 
-                register: registerMutation.mutateAsync, 
+        <AuthContext.Provider
+            value={{
+                user, // <--- NOW EXPOSED TO NAVBAR
+                isLoading,
+                login: loginMutation.mutateAsync,
+                register: registerMutation.mutateAsync,
                 logout: logoutMutation.mutateAsync,
-
-                // Optional: Pass full mutation objects if you need specific error states in UI
                 loginError: loginMutation.error,
                 registerError: registerMutation.error
             }}

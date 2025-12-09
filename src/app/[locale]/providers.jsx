@@ -1,18 +1,25 @@
-'use client'; // This directive is crucial
+'use client';
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
-import { AuthProvider } from "@/context/AuthContext";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/context/AuthContext'; // Import AuthProvider here
 
-export default function Providers({ children }) {
-  // We use useState to ensure the QueryClient is initialized only once 
-  // per session on the client side, and not recreated on every re-render.
-  const [queryClient] = useState(() => new QueryClient());
+export default function Providers({ children, initialUser }) {
+  // Create a client
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60 * 1000,
+      },
+    },
+  }));
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        {children}
+      {/* ✅ AuthProvider is now INSIDE QueryClientProvider */}
+      {/* It can now successfully use useQueryClient() */}
+      <AuthProvider initialUser={initialUser}>
+         {children}
       </AuthProvider>
     </QueryClientProvider>
   );

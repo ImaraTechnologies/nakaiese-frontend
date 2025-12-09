@@ -1,10 +1,13 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import { verifyToken } from '@/utils/auth-helpers';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
-import Providers from "./providers"; // Import the new client component
-import "../globals.css"; 
+import { cookies } from 'next/headers';
+import Providers from "./providers"; 
+import "../globals.css";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,26 +25,32 @@ export const metadata = {
 };
 
 export default async function LocaleLayout({ children, params }) {
-  // 1. Await params (Next.js 15+ requirement)
   const { locale } = await params;
 
-  // 2. verify locale exists in your routing config
   if (!routing.locales.includes(locale)) {
     notFound();
   }
 
-  // 3. Get messages for this specific language
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+
+
+
+  let initialUser = null;
+  if (token) {
+    initialUser = await verifyToken(token);
+  }
+
   const messages = await getMessages();
 
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* NextIntlClientProvider takes a plain object (messages), so it is fine here */}
         <NextIntlClientProvider messages={messages}>
-          {/* The QueryClient and Auth logic is now safely inside this Client Component */}
-          <Providers>
-            {children}
-          </Providers>
+           {/* ✅ Pass initialUser to Providers, which passes it to AuthProvider */}
+           <Providers initialUser={initialUser}>
+              {children}
+           </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

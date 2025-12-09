@@ -30,7 +30,6 @@ const InputField = ({ label, error, ...props }) => (
 
 export default function RegisterPage() {
   const { register } = useAuth()
-  const router = useRouter()
   // ✅ Hook for translations
   const t = useTranslations('Register')
 
@@ -68,9 +67,7 @@ export default function RegisterPage() {
         
         // Use translated success message
         setSuccessMessage(t('success'))
-        setTimeout(() => {
-            router.push('/auth/login') 
-        }, 1500)
+    
 
       } catch (error) {
         // Use backend error or fallback to translated generic error

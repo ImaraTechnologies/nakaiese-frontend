@@ -17,15 +17,6 @@ const items = [
   { name: "Sydney", image: "/banner.jpg" },
   { name: "Rome", image: "/banner.jpg" },
 ]
-
-const cardData = [
-  { title: "Item 1" },
-  { title: "Item 2" },
-  { title: "Item 3" },
-  { title: "Item 4" },
-  { title: "Item 5" },
-  { title: "Item 6" },
-];
 export default function Home() {
   return (
     <>
@@ -33,7 +24,7 @@ export default function Home() {
       <Container>
         <WhyChooseUs />
       </Container>
-      <Carousel items={items} />
+
 
       <Container>
         <SignInBanner />
@@ -55,6 +46,8 @@ export default function Home() {
       <Container>
         <Explorer />
       </Container>
+
+      <Carousel items={items} />
 
       <Container>
         <Testimonials />

@@ -2,34 +2,34 @@
 
 import React, { useState, useRef, useEffect, useTransition } from 'react';
 import Image from 'next/image';
-// ✅ IMPORT 1: Use specific imports from your routing config
 import { usePathname, useRouter, Link } from '@/i18n/routing';
 import { useTranslations, useLocale } from 'next-intl';
 
+// Icons
 import { FaGlobe, FaBell, FaUser, FaBars, FaTimes } from 'react-icons/fa';
 import { Heart } from 'lucide-react';
-import { BiCart } from 'react-icons/bi';
+
+// Components
 import Container from '@/components/Shared/Container/Container';
-import useAuthStore from '@/store/useAuthStore';
+
+// ✅ Context
+import { useAuth } from '@/context/AuthContext';
 
 const Navbar = () => {
-  // ✅ Hook for translations
   const t = useTranslations('HomePage.Navbar');
-
-  // ✅ Hook to get current active language ('en' or 'fr')
   const currentLocale = useLocale();
-
   const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  // Handling Language Switch (Toggle between EN and FR)
+  // ✅ 1. Get User, Logout, AND isLoading from Context
+  const { user, logout, isLoading } = useAuth();
+
+  // Language Switch Logic
   const [isPending, startTransition] = useTransition();
   const handleLanguageSwitch = () => {
     const nextLocale = currentLocale === 'en' ? 'fr' : 'en';
     startTransition(() => {
-      // replace(pathname, {locale: ...}) updates the URL without reloading the page fully
       router.replace(pathname, { locale: nextLocale });
     });
   };
@@ -42,6 +42,30 @@ const Navbar = () => {
 
   const toggleMobileMenu = () => setMobileMenuOpen(prev => !prev);
 
+  // ✅ 2. Define Auth Content Logic (The Anti-Flicker Logic)
+  // This determines what to show: Skeleton, Profile, or Login Button
+  const renderAuthSection = () => {
+    // A. If user exists, show Profile (Even if loading, we prefer showing the user)
+    if (user) {
+      return <UserDropdown t={t} logout={logout} user={user} />;
+    }
+
+    // B. If NO user, but we are Loading (refreshing or verifying token), show Skeleton
+    if (isLoading) {
+      return <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse border border-gray-300" />;
+    }
+
+    // C. If NO user and NOT loading, show Login Button
+    return (
+      <button
+        onClick={() => router.push('/auth/login')}
+        className="bg-[#4B75A5] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#3a5d85] transition"
+      >
+        {t('login')}
+      </button>
+    );
+  };
+
   return (
     <nav className="bg-white sticky top-0 z-50 shadow-sm">
       <Container>
@@ -49,13 +73,7 @@ const Navbar = () => {
 
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Image
-              src="/Images/Logo.svg"
-              alt="Nakiese Logo"
-              width={130}
-              height={40}
-              priority
-            />
+            <Image src="/Images/Logo.svg" alt="Nakiese Logo" width={130} height={40} priority />
           </Link>
 
           {/* Desktop Nav Links */}
@@ -71,15 +89,13 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Icons (Desktop) */}
+          {/* Desktop Right Side Icons */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* ✅ Language Switcher Button */}
             <div className="relative group">
               <IconButton
                 icon={<FaGlobe className={isPending ? 'opacity-50' : ''} />}
                 onClick={handleLanguageSwitch}
               />
-              {/* Tooltip to show current lang */}
               <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 text-xs bg-black text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">
                 {currentLocale.toUpperCase()}
               </span>
@@ -90,23 +106,12 @@ const Navbar = () => {
               onClick={() => router.push('/wishlist')}
             />
 
-
-            {/* CONDITIONAL RENDERING */}
-            {isAuthenticated ? (
-              <UserDropdown t={t} />
-            ) : (
-              <button
-                onClick={() => router.push('/auth/login')}
-                className="bg-[#4B75A5] text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#3a5d85] transition"
-              >
-                {t('login')}
-              </button>
-            )}
+            {/* ✅ 3. Render the dynamic auth content */}
+            {renderAuthSection()}
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex gap-2">
-            {/* Added Lang Switcher to Mobile Header too */}
             <IconButton
               icon={<FaGlobe className={isPending ? 'opacity-50' : ''} />}
               onClick={handleLanguageSwitch}
@@ -120,7 +125,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Dropdown */}
         {mobileMenuOpen && (
           <div className="md:hidden px-4 pb-4">
             <div className="bg-gray-100 rounded-lg shadow-sm">
@@ -138,16 +143,11 @@ const Navbar = () => {
               <div className="flex items-center justify-around mt-3 px-2 py-2 border-t border-gray-200">
                 <IconButton icon={<FaBell />} />
 
-                {isAuthenticated ? (
-                  <UserDropdown t={t} />
-                ) : (
-                  <button
-                    onClick={() => router.push('/auth/login')}
-                    className="text-sm font-bold text-[#4B75A5]"
-                  >
-                    {t('login')}
-                  </button>
-                )}
+                {/* ✅ 4. Render Auth Section in Mobile too */}
+                {/* We wrap it in a div to ensure alignment */}
+                <div onClick={() => setMobileMenuOpen(false)}>
+                   {renderAuthSection()}
+                </div>
               </div>
             </div>
           </div>
@@ -169,12 +169,10 @@ const IconButton = ({ icon, onClick }) => (
 );
 
 // User Dropdown Component
-// ✅ Pass translation function 't' as prop
-const UserDropdown = ({ t }) => {
+const UserDropdown = ({ t, logout, user }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef();
   const router = useRouter();
-  const logout = useAuthStore((state) => state.logout);
 
   const toggleDropdown = () => setIsOpen(prev => !prev);
 
@@ -189,22 +187,34 @@ const UserDropdown = ({ t }) => {
   }, []);
 
   const handleLogout = async () => {
-    await logout();
     setIsOpen(false);
-    router.push('/'); // Safe redirect after logout
+    await logout(); 
+    // No need to redirect manually, the mutation onSuccess handles it
   };
+
+  // Optional: Display username if available in user object
+  // const displayName = user?.username || user?.email || t('profile');
 
   const menuItems = [
     { label: t('profile'), onClick: () => { setIsOpen(false); router.push('/profile'); } },
-    { label: t('bookings'), onClick: () => { setIsOpen(false); router.push('/profile'); } },
+    { label: t('bookings'), onClick: () => { setIsOpen(false); router.push('/bookings'); } },
     { label: t('logout'), onClick: handleLogout },
   ];
 
   return (
     <div className="relative" ref={dropdownRef}>
       <IconButton icon={<FaUser className='w-4 h-4' />} onClick={toggleDropdown} />
+      
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+          
+          {/* Optional: Show User Email/Name at top of dropdown */}
+          {user?.username && (
+            <div className="px-4 py-2 border-b border-gray-100 text-xs text-gray-500 font-semibold uppercase">
+              {user.username}
+            </div>
+          )}
+
           {menuItems.map((item, index) => (
             <button
               key={index}
