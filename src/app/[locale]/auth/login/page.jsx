@@ -1,12 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import Link from 'next/link' // Ensure you import Link from '@/i18n/routing' if you want locale persistence
+import Link from 'next/link' 
 import Image from 'next/image'
 import { useAuth } from '@/context/AuthContext'
 import { loginSchema } from '@/validations/authSchemas'
 import { useAppForm } from '@/hooks/useAppForm'
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 // --- Reusable Component ---
 const InputField = ({ label, error, ...props }) => (
@@ -26,29 +25,29 @@ const InputField = ({ label, error, ...props }) => (
 // -------------------------------------------------------------------------------
 
 export default function LoginPage() {
-  const { login } = useAuth()
-  const [globalError, setGlobalError] = useState('')
-  const [loading, setLoading] = useState(false);
+  // 1. Get mutation state directly from the hook
+  const { login, isLoading, loginError } = useAuth();
+  const locale = useLocale();
   
-  // Initialize Translations
   const t = useTranslations('SignIn');
 
   const form = useAppForm(
     { email: '', password: '', remember: false },
     loginSchema,
     async (values) => {
-      setGlobalError('')
-      setLoading(true)
+      // 2. Simply call the mutation. 
+      // React Query handles the loading state and error capture automatically.
       try {
-        await login(values)
+        await login(values); 
       } catch (error) {
-        // Use server error if available, otherwise use translated generic error
-        setGlobalError(error.response?.data?.message || t('error_generic'))
-      } finally {
-        setLoading(false)
+        // We catch here to prevent an "Unhandled Promise Rejection" in the console,
+        // but we don't need to set state manually. 'loginError' will update automatically.
       }
     }
   );
+
+  // Helper to extract the error message from the Axios/React Query error object
+  const errorMessage = loginError?.response?.data?.message || loginError?.message;
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -65,7 +64,7 @@ export default function LoginPage() {
            />
         </div>
 
-        {/* Title with Rich Text Support for Blue Color */}
+        {/* Title */}
         <h2 className="text-2xl font-semibold text-center text-gray-800">
           {t.rich('title', {
             highlight: (chunks) => <span className="text-[#4B75A5]">{chunks}</span>
@@ -74,10 +73,10 @@ export default function LoginPage() {
         
         <p className="text-center text-sm text-gray-500 mt-1">{t('subtitle')}</p>
 
-        {/* Global Error Message */}
-        {globalError && (
+        {/* 3. Display Error from Mutation State */}
+        {errorMessage && (
             <div className="mt-4 p-3 text-sm text-red-600 bg-red-50 rounded-md text-center border border-red-200">
-                {globalError}
+                {errorMessage}
             </div>
         )}
 
@@ -110,7 +109,7 @@ export default function LoginPage() {
               />
               <span className="text-gray-700">{t('remember_me')}</span>
             </label>
-            <Link href="/forgot-password" className="text-[#4B75A5] hover:underline">
+            <Link href={`/${locale}/auth/forgot-password`} className="text-[#4B75A5] hover:underline">
               {t('forgot_password')}
             </Link>
           </div>
@@ -118,10 +117,11 @@ export default function LoginPage() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={loading}
+            // 4. Bind disabled state to mutation isLoading
+            disabled={isLoading}
             className="w-full bg-[#4B75A5] text-white hover:bg-[#406896] py-2 rounded-md text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center h-10"
           >
-            {loading ? (
+            {isLoading ? (
                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -135,7 +135,7 @@ export default function LoginPage() {
         {/* Footer */}
         <p className="text-sm text-center text-gray-600 mt-6">
           {t('no_account')}{' '}
-          <Link href="/auth/register" className="text-[#4B75A5] font-medium hover:underline">
+          <Link href={`/${locale}/auth/register`} className="text-[#4B75A5] font-medium hover:underline">
             {t('sign_up')}
           </Link>
         </p>

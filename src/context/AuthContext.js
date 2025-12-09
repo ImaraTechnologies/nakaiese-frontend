@@ -1,89 +1,96 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext} from "react";
 import { useRouter } from "next/navigation";
-import api from "@/utils/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query"; // <--- Import React Query
 import { loginUser, logoutUser, registerUser } from "@/services/authService";
-import useAuthStore from "@/store/useAuthStore"; // <--- Import Zustand Store
+import useAuthStore from "@/store/useAuthStore";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const queryClient = useQueryClient();
 
-    // We read the user from Zustand, not local state
-    const { user, setAuth, logout: performLogout } = useAuthStore();
+    // Zustand Store Access
+    const { user, setAuth, logout: performClientLogout } = useAuthStore();
 
-    // 1. ON MOUNT: Try to get a token silently (Refresh Flow)
-    // useEffect(() => {
-    //     const initAuth = async () => {
-    //         try {
-    //             const { refreshToken } = useAuthStore.getState();
-    //             // We don't read localStorage. We ask the API "Am I logged in?"
-    //             // The API checks the HttpOnly cookie and returns a new Access Token
-    //             const { data } = await api.post('/auth/refresh/', refreshToken ? { refresh: refreshToken } : {});
-
-    //             // STORE IN ZUSTAND (Memory)
-    //             setAuth(data.access);
-    //         } catch (error) {
-    //             // If refresh fails, we are effectively logged out
-    //             console.log("Session invalid or expired");
-    //             performLogout(); // Clear Zustand
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     };
-
-    //     initAuth();
-    // }, [setAuth, performLogout]);
-
-    // 2. LOGIN: Save to Zustand, not LocalStorage
-    const login = async (credentials) => {
-        try {
-            const data = await loginUser(credentials);
-            // Pass ALL 3 arguments now:
-            setAuth(data.access, data.refresh);
-
-            // router.push("/dashboard");
-        } catch (error) {
-            throw error;
-        }
-    };
-    // 3. LOGOUT: Clear Zustand
-    const logout = async () => {
-        // 1. Retrieve token from Zustand state
-        const { refreshToken } = useAuthStore.getState();
-
-        try {
-            if (refreshToken) {
-                // 2. Send it to backend as required
-                await logoutUser(refreshToken);
-            }
-        } catch (err) {
-            console.error("Logout error", err);
-        }
-
-        // 3. Clear store
-        // performClientLogout();
-        router.push("/login");
-    };
-
-    // Register wrapper
-    const register = async (userData) => {
-        try {
-            const data = await registerUser(userData);
+    const loginMutation = useMutation({
+        mutationFn: loginUser, // The service function
+        onSuccess: (data) => {
+            // 1. Update Zustand (Client State)
             setAuth(data.access, data.refresh);
             
-        } catch (error) {
-            console.error("Register error", err);
+            // 3. Navigate
+            router.push("/dashboard"); // Or wherever you want to go
+        },
+        onError: (error) => {
+            console.error("Login Failed:", error);
+            // You can handle toasts here or in the UI component
         }
-    };
+    });
+
+    // =================================================================
+    // 2. REGISTER MUTATION
+    // =================================================================
+    const registerMutation = useMutation({
+        mutationFn: registerUser,
+        onSuccess: (data) => {
+            setAuth(data.access, data.refresh);
+            router.push("/dashboard");
+        },
+        onError: (error) => {
+            console.error("Registration Failed:", error);
+        }
+    });
+
+    // =================================================================
+    // 3. LOGOUT MUTATION
+    // =================================================================
+    const logoutMutation = useMutation({
+        mutationFn: async () => {
+            const { refreshToken } = useAuthStore.getState();
+            if (refreshToken) {
+                return await logoutUser(refreshToken);
+            }
+        },
+        onSuccess: () => {
+            // Clear Zustand and Queries
+            performClientLogout();
+            queryClient.clear(); // Clears all cached data (security best practice)
+            router.push("/login");
+        },
+        onError: (err) => {
+            console.error("Logout failed on server, forcing client logout", err);
+            // Even if server fails, we log out the client
+            performClientLogout();
+            router.push("/login");
+        }
+    });
+
+    // =================================================================
+    // 4. DERIVED STATE
+    // =================================================================
+    // Combined loading state for UI spinners
+    const isLoading = loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, logout, register }}>
-            {/* Wait for the refresh attempt before showing the app */}
-            {/* {!loading && children} */}
+        <AuthContext.Provider 
+            value={{ 
+                user, 
+                // We pass 'isLoading' so the UI knows if ANY auth action is happening
+                isLoading, 
+                
+                // We pass 'mutateAsync' so the UI can use await login(creds)
+                login: loginMutation.mutateAsync, 
+                register: registerMutation.mutateAsync, 
+                logout: logoutMutation.mutateAsync,
+
+                // Optional: Pass full mutation objects if you need specific error states in UI
+                loginError: loginMutation.error,
+                registerError: registerMutation.error
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

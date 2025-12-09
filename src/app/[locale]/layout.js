@@ -3,8 +3,8 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
-import { AuthProvider } from "@/context/AuthContext";
-import "../globals.css"; // Note: changed path to ../ since we are inside [locale]
+import Providers from "./providers"; // Import the new client component
+import "../globals.css"; 
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,10 +36,12 @@ export default async function LocaleLayout({ children, params }) {
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        {/* NextIntlClientProvider takes a plain object (messages), so it is fine here */}
         <NextIntlClientProvider messages={messages}>
-          <AuthProvider>
+          {/* The QueryClient and Auth logic is now safely inside this Client Component */}
+          <Providers>
             {children}
-          </AuthProvider>
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>
