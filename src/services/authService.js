@@ -1,4 +1,3 @@
-import api from '@/utils/api'; // Your improved axios instance
 import localapi from '@/utils/local_api'
 
 export const loginUser = async (credentials) => {
@@ -13,6 +12,10 @@ export const registerUser = async (userData) => {
 
 export const logoutUser = async () => {
     const response = await localapi.post('/auth/logout/');
+    return response.data;
+};
+export const logoutAllUser = async () => {
+    const response = await localapi.post('/auth/logout_all/');
     return response.data;
 };
 

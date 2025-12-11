@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { loginUser, logoutUser, registerUser } from "@/services/authService";
+import { loginUser, logoutAllUser, logoutUser, registerUser } from "@/services/authService";
 
 
 
@@ -83,6 +83,29 @@ export const AuthProvider = ({ children, initialUser }) => {
         }
     });
 
+    // =================================================================
+    // LOGOUT SESSIONS
+    // =================================================================
+    const logoutALLMutation = useMutation({
+        mutationFn: async () => {
+            return await logoutAllUser();
+        },
+        onSuccess: () => {
+            // 1. Clear Client Cache
+            queryClient.clear();
+            
+            // 2. Optimistic Update (Instant feedback)
+            setUser(null); 
+            
+            // 3. Refresh Server Component to ensure cookies are gone server-side too
+            router.refresh();
+        },
+        onError: (err) => {
+            console.error("Logout failed, forcing client logout", err);
+            setUser(null);
+        }
+    });
+
     const isLoading = loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
 
     return (
@@ -93,6 +116,7 @@ export const AuthProvider = ({ children, initialUser }) => {
                 login: loginMutation.mutateAsync,
                 register: registerMutation.mutateAsync,
                 logout: logoutMutation.mutateAsync,
+                logoutAll: logoutALLMutation.mutateAsync,
                 loginError: loginMutation.error,
                 registerError: registerMutation.error
             }}

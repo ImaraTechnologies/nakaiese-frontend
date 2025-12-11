@@ -181,7 +181,7 @@
       "modal_title": "Change Password"
     },
     "placeholders": {
-        "enter_password": "Enter your password"
+      "enter_password": "Enter your password"
     },
     "two_factor": {
       "title": "2FA Authentication",
@@ -222,6 +222,259 @@
     "errors": {
       "generic": "Something went wrong. Please check your password.",
       "password_incorrect": "Incorrect password provided."
+    }
+  },
+  "Booking": {
+    "title": "My Bookings",
+    "subtitle": "Manage and view your booking history.",
+    "tabs": {
+      "upcoming": "Upcoming",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "status": {
+      "PD": "Pending",
+      "CF": "Confirmed",
+      "CI": "Checked In",
+      "CP": "Completed",
+      "CN": "Cancelled",
+      "NS": "No Show",
+      "FL": "Failed"
+    },
+    "labels": {
+      "check_in": "Check-in",
+      "check_out": "Check-out",
+      "reservation_date": "Date",
+      "arrival_time": "Time",
+      "guests": "Guests",
+      "table": "Table",
+      "room": "Room"
+    },
+    "actions": {
+      "view_details": "View Details",
+      "download_invoice": "Invoice"
+    },
+    "empty": {
+      "upcoming": "You have no upcoming bookings.",
+      "completed": "You haven't completed any bookings yet.",
+      "cancelled": "You have no cancelled bookings.",
+      "action": "Start Exploring"
+    }
+  },
+  "AboutPage": {
+    "Hero": {
+      "eyebrow": "Our Story",
+      "title_part1": "Redefining Travel Across",
+      "title_highlight": "The African Continent",
+      "description": "Nakiese is more than a booking platform. We are your gateway to the authentic, the luxurious, and the undiscovered gems of Africa."
+    },
+    "Mission": {
+      "title_part1": "Bridging the Gap Between",
+      "title_highlight": "Comfort & Culture",
+      "desc_p1": "Founded in 2020, Nakiese started with a simple question: \"Why is it so hard to find authentic, high-quality stays in Africa online?\"",
+      "desc_p2": "Today, we connect thousands of travelers with curated hotels and restaurants that meet strict standards of quality, safety, and hospitality. We believe travel should be seamless, inspiring, and deeply connected to local communities.",
+      "points": {
+        "verified": "Verified Properties Only",
+        "support": "24/7 Local Support",
+        "price": "Best Price Guarantee",
+        "secure": "Secure Payments"
+      },
+      "cta": "Join Our Journey"
+    },
+    "Stats": {
+      "destinations": "Destinations",
+      "hotels": "Partner Hotels",
+      "travelers": "Happy Travelers",
+      "years": "Years of Service"
+    },
+    "Team": {
+      "title": "Meet the Visionaries",
+      "subtitle": "A diverse team of travel enthusiasts, tech experts, and hospitality veterans working together to make your trip unforgettable.",
+      "members": {
+        "amara": {
+          "role": "Founder & CEO",
+          "bio": "Visionary leader with 15+ years in African tourism development."
+        },
+        "david": {
+          "role": "Head of Operations",
+          "bio": "Ensuring seamless experiences from booking to check-out."
+        },
+        "sarah": {
+          "role": "Lead Curator",
+          "bio": "Personally verifying every hotel and restaurant on our platform."
+        },
+        "james": {
+          "role": "Chief Technology Officer",
+          "bio": "Building the robust tech infrastructure that powers Nakiese."
+        }
+      }
+    }
+  },
+  "ContactPage": {
+    "Hero": {
+      "title": "Get in Touch",
+      "subtitle": "Have a question about a booking, a property, or just want to say hello? We're here to help 24/7."
+    },
+    "Form": {
+      "header": "Send us a message",
+      "success_title": "Message Sent!",
+      "success_desc": "Thank you for reaching out. Our team will get back to you within 24 hours.",
+      "send_another": "Send another message",
+      "first_name": "First Name",
+      "last_name": "Last Name",
+      "email": "Email Address",
+      "subject": "Subject",
+      "message": "Message",
+      "placeholder_fname": "John",
+      "placeholder_lname": "Doe",
+      "placeholder_email": "john@example.com",
+      "placeholder_msg": "How can we help you today?",
+      "btn_sending": "Sending...",
+      "btn_send": "Send Message",
+      "subjects": {
+        "general": "General Inquiry",
+        "booking": "Booking Issue",
+        "partner": "Partner with Us",
+        "feedback": "Feedback"
+      }
+    },
+    "Sidebar": {
+      "title": "Contact Information",
+      "call": "Call Us",
+      "email": "Email Us",
+      "visit": "Visit Us",
+      "hours": "Working Hours",
+      "hours_text": "Mon - Fri: 8 AM - 6 PM",
+      "support_text": "24/7 Support for Bookings",
+      "map_loading": "Map Loading..."
+    },
+    "FAQ": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Quick answers to common questions about your bookings and account.",
+      "questions": {
+        "cancel": "How do I cancel my booking?",
+        "cancel_ans": "You can cancel your booking directly from your 'My Bookings' page. Cancellation policies vary by property.",
+        "payment": "Is payment processed securely?",
+        "payment_ans": "Yes, we use enterprise-grade encryption (SSL) and partner with trusted payment gateways like Stripe and PayPal.",
+        "weather": "Do you offer refunds for bad weather?",
+        "weather_ans": "Refunds strictly depend on the hotel or restaurant's policy. We recommend purchasing travel insurance.",
+        "groups": "Can I book for large groups?",
+        "groups_ans": "Absolutely! For groups larger than 10, please use the form above to contact our dedicated Group Travel team."
+      }
+    }
+  },
+  "HotelsPage": {
+    "Header": {
+      "title": "Find Your Perfect Stay",
+      "subtitle": "Discover top-rated hotels across Africa's best destinations.",
+      "search_placeholder": "Where are you going?",
+      "search_btn": "Search"
+    },
+    "Filters": {
+      "title": "Filters",
+      "reset": "Reset",
+      "price_range": "Price Range",
+      "min": "Min",
+      "max": "Max",
+      "amenities": "Amenities",
+      "star_rating": "Star Rating",
+      "amenity_labels": {
+        "wifi": "Free WiFi",
+        "pool": "Swimming Pool",
+        "breakfast": "Breakfast Included",
+        "parking": "Parking"
+      },
+      "stars_label": "Stars",
+      "show_results": "Show Results"
+    },
+    "Toolbar": {
+      "showing": "Showing",
+      "properties": "properties",
+      "filters_btn": "Filters",
+      "sort_by": "Sort by",
+      "sort_options": {
+        "recommended": "Recommended",
+        "price_low": "Price: Low to High",
+        "price_high": "Price: High to Low",
+        "top_rated": "Top Rated"
+      }
+    },
+    "Card": {
+      "reviews": "reviews",
+      "starts_from": "Starts from",
+      "per_night": "/ night",
+      "view_details": "View Details"
+    },
+    "load_more": "Load More Hotels"
+  },
+  "RestaurantsPage": {
+    "Header": {
+      "title": "Savor Authentic Flavors",
+      "subtitle": "Book tables at top-rated restaurants and hidden gems.",
+      "search_placeholder": "Search by name, cuisine, or city...",
+      "search_btn": "Find Table"
+    },
+    "Filters": {
+      "title": "Filter Results",
+      "reset": "Reset All",
+      "cuisine": "Cuisine",
+      "dietary": "Dietary",
+      "vibe": "Vibe",
+      "apply_btn": "Apply Filters",
+      "cuisine_labels": {
+        "local": "Local African",
+        "seafood": "Seafood",
+        "italian": "Italian",
+        "asian": "Asian Fusion",
+        "steak": "Steakhouse",
+        "veg": "Vegetarian"
+      },
+      "dietary_labels": {
+        "halal": "Halal",
+        "vegan": "Vegan",
+        "gluten_free": "Gluten Free",
+        "kosher": "Kosher"
+      },
+      "vibe_labels": {
+        "rooftop": "Rooftop",
+        "ocean": "Ocean View",
+        "fine_dining": "Fine Dining",
+        "live": "Live Music",
+        "casual": "Casual"
+      }
+    },
+    "Toolbar": {
+      "found": "Found",
+      "places": "places to eat",
+      "filters_btn": "Filters",
+      "sort_by": "Sort by",
+      "sort_options": {
+        "top_rated": "Top Rated",
+        "fee_low": "Fee: Low to High",
+        "fee_high": "Fee: High to Low",
+        "popular": "Most Popular"
+      }
+    },
+    "Card": {
+      "res_fee": "Res. Fee",
+      "free": "Free",
+      "reserve_btn": "Reserve Table"
+    },
+    "load_more": "Load More Restaurants"
+  },
+  "WishlistPage": {
+    "Header": {
+      "title": "Your Wishlist",
+      "subtitle": "{count} {count, plural, =1 {item} other {items}} saved for later.",
+      "clear_all": "Clear All"
+    },
+    "EmptyState": {
+      "title": "Your wishlist is empty",
+      "message": "It seems you haven't saved any properties yet. Explore our top-rated hotels and restaurants to find your next adventure.",
+      "button": "Start Exploring"
+    },
+    "Actions": {
+      "remove_tooltip": "Remove from wishlist"
     }
   }
 }

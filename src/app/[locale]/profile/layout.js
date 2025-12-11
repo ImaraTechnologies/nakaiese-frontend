@@ -4,20 +4,20 @@ import { useState, useRef, useEffect } from 'react';
 import {
     UserPlus,
     ShieldCheck,
-    Wallet,
     SlidersHorizontal,
     ChevronDown,
-    ChevronRight
+    ChevronRight,
 } from 'lucide-react'
 import { Link, usePathname } from '@/i18n/routing'; 
 import Navbar from '@/components/Layout/Navbar/Navbar';
 import Footer from '@/components/Layout/Footer/Footer';
 import Container from '@/components/Shared/Container/Container';
+import { BiCalendarEdit } from 'react-icons/bi';
 
 const tabs = [
     { name: 'Personal Details', icon: UserPlus, url: "/profile" },
     { name: 'Security', icon: ShieldCheck, url: "/profile/security" },
-    { name: 'Payment Details', icon: Wallet, url: "/profile/payment-method" },
+    { name: 'My Booking', icon: BiCalendarEdit, url: "/profile/bookings" },
     { name: 'Preferences', icon: SlidersHorizontal, url: "/profile/preferences" },
 ]
 

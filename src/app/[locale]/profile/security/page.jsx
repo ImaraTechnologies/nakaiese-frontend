@@ -23,7 +23,7 @@ import {
 
 export default function SecurityPage() {
     const t = useTranslations('Security');
-    const { logout } = useAuth();
+    const { logoutAll } = useAuth();
 
     const {
         changePassword,
@@ -67,7 +67,7 @@ export default function SecurityPage() {
     });
 
     return (
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="w-full px-4">
 
             {/* Header */}
             <div className="mb-8">
@@ -100,7 +100,7 @@ export default function SecurityPage() {
                     description={t('sessions.desc')}
                     actionLabel={t('actions.logout_all')}
                     onClick={() => {
-                        if (confirm(t('sessions.confirm'))) logout();
+                        if (confirm(t('sessions.confirm'))) logoutAll();
                     }}
                 />
 
