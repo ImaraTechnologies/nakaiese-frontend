@@ -3,10 +3,13 @@
 import React from 'react';
 import { BedDouble, Utensils, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
+
 
 
 const Explorer = () => {
         const t = useTranslations();
+        const router = useRouter();
  
 
     const categories = [
@@ -17,7 +20,8 @@ const Explorer = () => {
             count: t('Explorer.hotels.count'), 
             image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1200',
             icon: <BedDouble className="w-6 h-6" />,
-            action: t('Explorer.hotels.action')
+            action: t('Explorer.hotels.action'),
+            url: '/hotels'
         },
         {
             id: 'restaurants',
@@ -26,7 +30,8 @@ const Explorer = () => {
             count: t('Explorer.restaurants.count'), 
             image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&q=80&w=1200',
             icon: <Utensils className="w-6 h-6" />,
-            action: t('Explorer.restaurants.action')
+            action: t('Explorer.restaurants.action'),
+            url: '/restaurants'
         }
     ];
 
@@ -43,18 +48,16 @@ const Explorer = () => {
                         {t('Explorer.subtitle')}
                     </p>
                 </div>
-                {/* Optional 'View All' link */}
-                <a href="#" className="hidden md:flex items-center text-blue-900 font-semibold hover:text-yellow-600 transition-colors">
-                    {t('Explorer.view_all')} <ArrowRight className="ml-2 w-4 h-4" />
-                </a>
+               
             </div>
 
             {/* The 50/50 Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" >
                 {categories.map((category) => (
                     <div
                         key={category.id}
                         className="group relative h-[400px] w-full overflow-hidden rounded-3xl shadow-lg cursor-pointer"
+                        onClick={()=>router.push(category.url)}
                     >
                         {/* Background Image with Zoom Effect */}
                         <div

@@ -476,5 +476,34 @@
     "Actions": {
       "remove_tooltip": "Remove from wishlist"
     }
+  },
+  "Footer": {
+    "Brand": {
+      "description": "Your premier destination for experiencing the vibrant essence of authentic African living! Discover the rich traditions, culture, and lifestyle that make Africa truly unique.",
+      "phone": "+243 906947381",
+      "email": "support@nakiese.com"
+    },
+    "Columns": {
+      "company": "Company",
+      "support": "Support",
+      "legal": "Legal"
+    },
+    "Links": {
+      "about": "About Us",
+      "careers": "Careers",
+      "blog": "Travel Blog",
+      "contact": "Contact Us",
+      "help_center": "Help Center",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "refund": "Refund Policy"
+    },
+    "Newsletter": {
+      "title": "Subscribe to our newsletter",
+      "subtitle": "The latest deals and travel inspiration sent to your inbox.",
+      "placeholder": "Enter your email",
+      "button": "Subscribe"
+    },
+    "copyright": "© {year} Nakiese. All rights reserved."
   }
 }

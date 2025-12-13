@@ -1,13 +1,13 @@
 import axios from "axios";
 
-const BASE_URL = "/api/"
+
 const localapi = axios.create({
-    baseURL: BASE_URL,
-    timeout: 15000, // 15s is safer for slower mobile networks
+    baseURL: "/api/", 
+    timeout: 15000,
     headers: {
         "Content-Type": "application/json",
     },
-    withCredentials: true, // CRITICAL: Allows cookies to be sent/received (for refresh tokens)
+    withCredentials: true, 
 });
 
 export default localapi;

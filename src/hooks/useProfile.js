@@ -17,10 +17,6 @@ export const useProfile = () => {
     } = useQuery({
         queryKey: ['userProfile'],
         queryFn: getUserProfile,
-        
-        // ✅ 2. PREVENT REDIRECTION LOOP
-        // Only run this query if the user is logged in.
-        // This stops the API from firing 401s while the auth state is still loading.
         enabled: isAuthenticated, 
 
         staleTime: 1000 * 60 * 5, 

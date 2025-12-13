@@ -2,58 +2,82 @@
 import { useMemo, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import Image from 'next/image'; // 1. Import Next.js Image component
+import Image from 'next/image';
 import { 
   MapPin, 
   Heart, 
   Star, 
-  Users, 
   BedDouble, 
   Utensils, 
-  Armchair,
-  ArrowRight
+  ArrowRight,
+  CheckCircle2 
 } from 'lucide-react';
 
-const PropertyCard = ({ data = {}, type = "room" }) => {
+const PropertyCard = ({ data = {} }) => {
+  console.log("Rendering PropertyCard for ID:", data.id);
   const router = useRouter();
   const locale = useLocale();
 
-  // 1. Data Normalization Strategy
+  // --- DATA NORMALIZATION STRATEGY ---
   const details = useMemo(() => {
-    const isRoom = type === 'room';
-    const property = isRoom ? data.hotel : data.restaurant; 
+    // 1. Determine Type
+    const isHotel = data.property_type === 'HL'; 
+
+    // 2. Construct Image URL (THE FIX IS HERE)
+    let imageUrl = '/placeholder-property.jpg';
     
-    // Construct Image URL
-    const rawImage = isRoom ? data.image : data.images;
-    const imageUrl = rawImage 
-      ? `${process.env.NEXT_PUBLIC_API_BASE_URL}${rawImage}`
-      : '/placeholder-property.jpg'; // Fallback
+    if (data.feature_image) {
+      if (data.feature_image.startsWith('http')) {
+        // Use absolute URL as is (e.g., AWS S3 or Unsplash)
+        imageUrl = data.feature_image;
+      } else {
+        try {
+            const apiBase = process.env.NEXT_PUBLIC_MEDIA_BASE_URL || 'http://localhost:8000';
+            const origin = new URL(apiBase).origin; // Extracts 'http://localhost:8000'
+            imageUrl = `${origin}${data.feature_image}`;
+        } catch (e) {
+            console.error("URL Parse Error:", e);
+            imageUrl = data.feature_image;
+        }
+      }
+    }
+
+    // 3. Format Price
+    const priceDisplay = Number(data.min_price) > 0 
+        ? `$${Number(data.min_price).toLocaleString()}` 
+        : 'Menu';
+
+    // 4. Extract Amenity
+    const topAmenity = data.amenities && data.amenities.length > 0 
+        ? data.amenities[0] 
+        : (isHotel ? 'Luxury Stay' : 'Fine Dining');
 
     return {
-      isRoom,
-      id: isRoom ? data.room_id : data.table_id,
-      propertyName: property?.name || "Unknown Property",
-      subTitle: isRoom ? data.title : `Table ${data.table_number}`, 
-      city: property?.city?.name || "Unknown City",
-      country: property?.country || "",
-      rating: data.avg_rating || property?.rating || "New",
-      reviewCount: property?.review_count || 0,
-      capacity: data.capacity,
-      isBooked: data.is_booked, 
-      price: isRoom ? data.price : (data.reservation_fee || 0),
-      period: isRoom ? '/ night' : ' reservation',
-      attributeLabel: isRoom ? data.bed_type : data.location_type, 
-      attributeIcon: isRoom ? BedDouble : Armchair,
+      id: data.id,
+      isHotel,
+      title: data.title || "Untitled Property",
+      locationText: data.location 
+        ? `${data.location.city}, ${data.location.country}` 
+        : "Unknown Location",
+      imageUrl,
+      rating: data.rating || "New",
+      reviewCount: data.review_count || 0,
+      price: priceDisplay,
+      period: isHotel ? '/ night' : ' start',
+      TypeIcon: isHotel ? BedDouble : Utensils,
+      typeLabel: isHotel ? "Hotel" : "Restaurant",
+      amenityLabel: topAmenity,
+      isAvailable: true 
     };
-  }, [data, type]);
+  }, [data]);
 
   const handleCardClick = () => {
-    router.push(`/${locale}/property?type=${type}&id=${details.id}`);
+    router.push(`/${locale}/properties/${details.id}`);
   };
 
   const handleWishlistClick = (e) => {
     e.stopPropagation();
-    console.log("Added to wishlist:", details.id);
+    console.log("Wishlist toggle:", details.id);
   };
 
   return (
@@ -62,14 +86,15 @@ const PropertyCard = ({ data = {}, type = "room" }) => {
       className="group relative w-full bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden cursor-pointer flex flex-col h-full"
     >
       {/* --- IMAGE SECTION --- */}
-      <div className="relative h-[220px] w-full overflow-hidden">
-        {/* 2. Replaced <img> with <Image /> using 'fill' */}
+      <div className="relative h-[220px] w-full overflow-hidden bg-gray-100">
         <Image
           src={details.imageUrl}
-          alt={details.propertyName}
+          alt={details.title}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover transition-transform duration-700 group-hover:scale-110"
+          // SECURITY BYPASS: This fixes "resolved to private ip" errors on localhost
+          unoptimized={process.env.NODE_ENV === 'development'} 
         />
         
         {/* Overlay Gradient */}
@@ -77,16 +102,12 @@ const PropertyCard = ({ data = {}, type = "room" }) => {
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 flex gap-2 z-10">
-          <span className={`px-3 py-1 text-xs font-semibold rounded-full backdrop-blur-md ${
-            details.isBooked 
-              ? 'bg-red-500/90 text-white' 
-              : 'bg-green-500/90 text-white'
-          }`}>
-            {details.isBooked ? "Booked" : "Available"}
+          <span className="px-3 py-1 text-xs font-semibold bg-blue-600/90 text-white rounded-full backdrop-blur-md">
+             {details.isAvailable ? "Available" : "Booked"}
           </span>
           <span className="px-3 py-1 text-xs font-semibold bg-white/90 text-gray-800 rounded-full backdrop-blur-md flex items-center gap-1">
-             {details.isRoom ? <BedDouble size={12}/> : <Utensils size={12}/>}
-             {details.isRoom ? "Hotel" : "Restaurant"}
+             <details.TypeIcon size={12}/>
+             {details.typeLabel}
           </span>
         </div>
 
@@ -109,21 +130,18 @@ const PropertyCard = ({ data = {}, type = "room" }) => {
       {/* --- CONTENT SECTION --- */}
       <div className="p-5 flex flex-col grow">
         
-        {/* Title & Subtitle */}
+        {/* Title */}
         <div className="mb-3">
           <h3 className="text-lg font-bold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
-            {details.subTitle}
+            {details.title}
           </h3>
-          <p className="text-sm text-gray-500 font-medium line-clamp-1">
-            {details.propertyName}
-          </p>
         </div>
 
         {/* Location */}
         <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-4">
           <MapPin size={14} className="text-blue-500 shrink-0" />
           <span className="truncate">
-            {details.city}, {details.country}
+            {details.locationText}
           </span>
         </div>
 
@@ -132,15 +150,15 @@ const PropertyCard = ({ data = {}, type = "room" }) => {
 
         {/* Attributes */}
         <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
-          <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-md">
-            <Users size={14} className="text-gray-400" />
-            <span className="font-medium">{details.capacity} Guests</span>
+          <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-md max-w-[50%]">
+            <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+            <span className="font-medium truncate">{details.amenityLabel}</span>
           </div>
           
           <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-md">
-            <details.attributeIcon size={14} className="text-gray-400" />
-            <span className="font-medium capitalize truncate max-w-[100px]">
-              {details.attributeLabel || (details.isRoom ? "Standard" : "Main Hall")}
+            <details.TypeIcon size={14} className="text-gray-400" />
+            <span className="font-medium capitalize">
+              {details.typeLabel}
             </span>
           </div>
         </div>
@@ -151,7 +169,7 @@ const PropertyCard = ({ data = {}, type = "room" }) => {
             <p className="text-xs text-gray-400 font-medium mb-0.5">Start from</p>
             <div className="flex items-baseline gap-1">
               <span className="text-xl font-extrabold text-blue-900">
-                ${Number(details.price).toLocaleString()}
+                {details.price}
               </span>
               <span className="text-xs text-gray-500 font-medium">
                 {details.period}

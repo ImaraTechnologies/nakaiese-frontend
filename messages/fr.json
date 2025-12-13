@@ -464,5 +464,34 @@
     "Actions": {
       "remove_tooltip": "Retirer de la liste"
     }
+  },
+  "Footer": {
+    "Brand": {
+      "description": "Votre destination privilégiée pour découvrir l'essence vibrante de la vie africaine authentique ! Découvrez les riches traditions, la culture et le mode de vie qui rendent l'Afrique unique.",
+      "phone": "+243 906947381",
+      "email": "support@nakiese.com"
+    },
+    "Columns": {
+      "company": "Entreprise",
+      "support": "Aide",
+      "legal": "Légal"
+    },
+    "Links": {
+      "about": "À propos",
+      "careers": "Carrières",
+      "blog": "Blog Voyage",
+      "contact": "Contactez-nous",
+      "help_center": "Centre d'aide",
+      "terms": "Conditions d'utilisation",
+      "privacy": "Politique de confidentialité",
+      "refund": "Politique de remboursement"
+    },
+    "Newsletter": {
+      "title": "Abonnez-vous à notre newsletter",
+      "subtitle": "Les dernières offres et inspirations de voyage envoyées dans votre boîte de réception.",
+      "placeholder": "Entrez votre email",
+      "button": "S'abonner"
+    },
+    "copyright": "© {year} Nakiese. Tous droits réservés."
   }
 }

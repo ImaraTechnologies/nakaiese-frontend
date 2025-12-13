@@ -30,9 +30,7 @@ const Carousel = ({ items = [], loading = false }) => {
 
     return (
         <Container className="mb-6 px-4">
-            <h2 className="text-2xl sm:text-md md:text-xl lg:text-2xl font-bold px-3 mb-4 md:mb-6">
-                Discover Africa
-            </h2>
+           
             <Swiper
                 spaceBetween={20} // Increased spacing for better aesthetics
                 // 3. Responsive Breakpoints (Mobile First)
