@@ -24,22 +24,21 @@ const destinationItems = [
 ];
 
 export default function Home() {
-  
+
   // 1. Fetch Hotels
-  const { 
-    data: hotelsData, 
+  const {
+    data: hotelsData,
     isLoading: hotelsLoading,
     isError: hotelsError
   } = useProperties({ page: 1, property_type: 'HL' });
 
-  console.log("Hotels Data:", hotelsData);
-
   // 2. Fetch Restaurants
-  const { 
-    data: restaurantsData, 
+  const {
+    data: restaurantsData,
     isLoading: restaurantsLoading,
     isError: restaurantsError
   } = useProperties({ page: 1, property_type: 'RT' });
+
 
   // 3. Combined Loading/Error State
   // In a real app, you might want to show skeletons for each section independently
@@ -85,16 +84,16 @@ export default function Home() {
             {/* SAFEGUARD: API pagination puts data in 'results'. 
                We slice(0, 4) to only show the top 4 on the homepage.
             */}
-            {hotelsData?.slice(0, 4).map((item) => (
+            {hotelsData?.results?.slice(0, 4).map((item) => (
               <PropertyCard
                 key={item.id}
                 data={item} // Pass the raw API object
               />
             ))}
-            
+
             {/* Fallback if no data */}
             {hotelsData?.length === 0 && (
-               <p className="col-span-full text-center text-gray-500 py-10">No hotels found.</p>
+              <p className="col-span-full text-center text-gray-500 py-10">No hotels found.</p>
             )}
           </div>
         </Container>
@@ -115,7 +114,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
-            {restaurantsData?.slice(0, 4).map((item) => (
+            {restaurantsData?.results?.slice(0, 4).map((item) => (
               <PropertyCard
                 key={item.id}
                 data={item}
@@ -123,7 +122,7 @@ export default function Home() {
             ))}
 
             {restaurantsData?.length === 0 && (
-               <p className="col-span-full text-center text-gray-500 py-10">No restaurants found.</p>
+              <p className="col-span-full text-center text-gray-500 py-10">No restaurants found.</p>
             )}
           </div>
         </Container>

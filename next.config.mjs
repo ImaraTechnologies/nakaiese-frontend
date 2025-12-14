@@ -10,24 +10,23 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'localhost',
+        hostname: '127.0.0.1',
         port: '8000',
-        pathname: '/**', // CHANGED: Allow ALL paths (fixes the /api/v1/... mismatch)
+        pathname: '/media/**', 
       },
       {
         protocol: 'http',
-        hostname: '127.0.0.1', 
+        hostname: 'localhost',
         port: '8000',
-        pathname: '/**', // CHANGED: Same here
+        pathname: '/media/**', 
       },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
       },
     ],
   },
+  // This helps prevent caching issues during dev
   reactCompiler: true,
 };
 
