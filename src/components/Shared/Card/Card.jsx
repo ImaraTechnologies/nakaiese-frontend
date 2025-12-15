@@ -12,6 +12,7 @@ import {
   ArrowRight,
   CheckCircle2 
 } from 'lucide-react';
+import WishButton from '../WishButton/WishButton';
 
 const PropertyCard = ({ data = {} }) => {
   console.log("Rendering PropertyCard for ID:", data.id);
@@ -75,10 +76,7 @@ const PropertyCard = ({ data = {} }) => {
     router.push(`/${locale}/properties/${details.id}`);
   };
 
-  const handleWishlistClick = (e) => {
-    e.stopPropagation();
-    console.log("Wishlist toggle:", details.id);
-  };
+  
 
   return (
     <div 
@@ -112,12 +110,7 @@ const PropertyCard = ({ data = {} }) => {
         </div>
 
         {/* Wishlist Button */}
-        <button
-          onClick={handleWishlistClick}
-          className="absolute top-3 right-3 p-2 z-10 rounded-full bg-white/80 hover:bg-white text-gray-400 hover:text-red-500 transition-all shadow-sm backdrop-blur-sm"
-        >
-          <Heart size={18} className="transition-colors" />
-        </button>
+        <WishButton item={data}/>
 
         {/* Rating */}
         <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1 px-2 py-1 bg-white/90 rounded-lg text-xs font-bold shadow-sm">

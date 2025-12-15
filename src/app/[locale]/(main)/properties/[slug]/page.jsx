@@ -11,6 +11,7 @@ import PropertyGallery from '@/components/Shared/Property/PropertyGallery';
 import BookingSidebar from '@/components/Shared/Property/BookingSidebar';
 import RoomList from '@/components/Shared/Property/RoomList'; // Create this separately if needed
 import MenuDisplay from '@/components/Shared/Property/MenuDisplay'; // Create this separately
+import WishButton from '@/components/Shared/WishButton/WishButton';
 
 export default function PropertyDetailsPage() {
   const params = useParams();
@@ -50,9 +51,7 @@ export default function PropertyDetailsPage() {
                 <button className="p-2 rounded-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors">
                   <Share2 className="w-5 h-5" />
                 </button>
-                <button className="p-2 rounded-full bg-white border border-slate-200 hover:text-red-500 transition-colors">
-                  <Heart className="w-5 h-5" />
-                </button>
+              
               </div>
             </div>
 

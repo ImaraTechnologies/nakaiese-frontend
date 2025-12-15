@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 // FIX 1: Use 'Heart', not 'HeartIcon'
 import { MapPin, Star, Heart } from 'lucide-react';
+import WishButton from '../WishButton/WishButton';
 
 const HotelCard = ({ data, t }) => {
     // 1. CONFIG
@@ -46,9 +47,7 @@ const HotelCard = ({ data, t }) => {
                         Top Rated
                     </span>
                 )}
-                <button className="absolute top-3 right-3 p-2 bg-white/30 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-colors z-10">
-                    <Heart className="w-5 h-5" />
-                </button>
+                <WishButton item={data}/>
             </div>
 
             <div className="p-5 flex flex-col grow">

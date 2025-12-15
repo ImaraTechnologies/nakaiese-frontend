@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Star, ChefHat, Clock, Utensils, Heart } from 'lucide-react';
+import WishButton from '../WishButton/WishButton';
 
 const RestaurantCard = ({ data, t }) => {
     // 1. CONFIG & SAFETY
@@ -71,9 +72,7 @@ const RestaurantCard = ({ data, t }) => {
                 )}
 
                 {/* Favorite Button */}
-                <button className="absolute top-3 right-3 p-2 bg-white/30 backdrop-blur-md rounded-full text-white hover:bg-white hover:text-red-500 transition-colors z-10">
-                    <Heart className="w-5 h-5" />
-                </button>
+                <WishButton item={data}/>
             </div>
 
             {/* --- Content Area --- */}

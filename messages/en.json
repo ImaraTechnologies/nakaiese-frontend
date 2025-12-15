@@ -507,6 +507,8 @@
     "copyright": "© {year} Nakiese. All rights reserved."
   },
   "Property": {
+    "more":"Explore More",
+    "gallery": "Gallery",
     "typeLabel": "Type",
     "hotel": "Hotel & Resort",
     "restaurant": "Fine Dining Restaurant",

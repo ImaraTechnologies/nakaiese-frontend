@@ -14,7 +14,6 @@ export default function HotelsPage() {
   const t = useTranslations('HotelsPage');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
-  // --- DATA FETCHING (Refactored to Infinite Query) ---
   const {
     data,
     fetchNextPage,
@@ -23,8 +22,7 @@ export default function HotelsPage() {
     isLoading,
   } = useProperties({ property_type: 'HL' });
 
-  // Flatten the pages into a single array of hotels
-  // Each 'page' from the API has a 'results' array
+
   const allHotels = data?.pages.flatMap((page) => page.results) || [];
 
   return (
@@ -33,7 +31,7 @@ export default function HotelsPage() {
 
       <div className="container mx-auto px-4 mt-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          
+
           <aside className="hidden lg:block w-1/4 min-w-[280px]">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24">
               <div className="flex items-center justify-between mb-6">

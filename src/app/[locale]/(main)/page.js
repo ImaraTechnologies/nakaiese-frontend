@@ -32,6 +32,8 @@ export default function Home() {
     isError: hotelsError
   } = useProperties({ page: 1, property_type: 'HL' });
 
+  console.log('Hotels Data:', hotelsData?.pages[0]?.results);
+
   // 2. Fetch Restaurants
   const {
     data: restaurantsData,
@@ -84,7 +86,7 @@ export default function Home() {
             {/* SAFEGUARD: API pagination puts data in 'results'. 
                We slice(0, 4) to only show the top 4 on the homepage.
             */}
-            {hotelsData?.results?.slice(0, 4).map((item) => (
+            {hotelsData?.pages[0]?.results?.slice(0, 4).map((item) => (
               <PropertyCard
                 key={item.id}
                 data={item} // Pass the raw API object
@@ -92,7 +94,7 @@ export default function Home() {
             ))}
 
             {/* Fallback if no data */}
-            {hotelsData?.length === 0 && (
+            {hotelsData?.pages[0]?.results.length === 0 && (
               <p className="col-span-full text-center text-gray-500 py-10">No hotels found.</p>
             )}
           </div>
@@ -114,14 +116,14 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4">
-            {restaurantsData?.results?.slice(0, 4).map((item) => (
+            {restaurantsData?.pages[0]?.results.slice(0, 4).map((item) => (
               <PropertyCard
                 key={item.id}
                 data={item}
               />
             ))}
 
-            {restaurantsData?.length === 0 && (
+            {restaurantsData?.pages[0]?.results.length === 0 && (
               <p className="col-span-full text-center text-gray-500 py-10">No restaurants found.</p>
             )}
           </div>
