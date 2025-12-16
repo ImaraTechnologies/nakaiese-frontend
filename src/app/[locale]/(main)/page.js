@@ -32,8 +32,6 @@ export default function Home() {
     isError: hotelsError
   } = useProperties({ page: 1, property_type: 'HL' });
 
-  console.log('Hotels Data:', hotelsData?.pages[0]?.results);
-
   // 2. Fetch Restaurants
   const {
     data: restaurantsData,

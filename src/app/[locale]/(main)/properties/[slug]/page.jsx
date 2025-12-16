@@ -12,6 +12,7 @@ import BookingSidebar from '@/components/Shared/Property/BookingSidebar';
 import RoomList from '@/components/Shared/Property/RoomList'; // Create this separately if needed
 import MenuDisplay from '@/components/Shared/Property/MenuDisplay'; // Create this separately
 import WishButton from '@/components/Shared/WishButton/WishButton';
+import SeatingOptions from '@/components/Shared/Property/SeatingOptions';
 
 export default function PropertyDetailsPage() {
   const params = useParams();
@@ -28,15 +29,15 @@ export default function PropertyDetailsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-600 pb-20">
-      
+
       {/* 1. Gallery Section */}
       <PropertyGallery images={property.images} t={t} />
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-10">
-        
+
         {/* LEFT COLUMN: Content */}
         <div className="lg:col-span-2 space-y-10">
-          
+
           {/* Header Info */}
           <div className="space-y-4">
             <div className="flex justify-between items-start">
@@ -51,7 +52,7 @@ export default function PropertyDetailsPage() {
                 <button className="p-2 rounded-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors">
                   <Share2 className="w-5 h-5" />
                 </button>
-              
+
               </div>
             </div>
 
@@ -73,7 +74,7 @@ export default function PropertyDetailsPage() {
           <section>
             <h2 className="text-2xl font-bold text-slate-900 mb-6">{isHotel ? t('aboutStay') : t('aboutPlace')}</h2>
             <p className="leading-relaxed text-lg text-slate-600 mb-8">{property.description}</p>
-            
+
             <h3 className="font-semibold text-slate-900 mb-4">{t('amenities')}</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-4">
               {property.amenities?.map((amenity, idx) => (
@@ -90,29 +91,29 @@ export default function PropertyDetailsPage() {
           {/* Dynamic Content (Rooms vs Menu) */}
           <section className="pt-8 border-t border-slate-200">
             {isHotel ? (
-               <RoomList rooms={property.room_types} t={t} /> 
+              <RoomList rooms={property.room_types} t={t} />
             ) : (
-               <MenuDisplay menus={property.menus} t={t} />
+              <SeatingOptions tables={property.tables} t={t} />
             )}
           </section>
 
           {/* Reviews Placeholder */}
           <section className="pt-8 border-t border-slate-200">
-             <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('guestReviews')}</h2>
-             <div className="bg-blue-50/50 p-8 rounded-2xl text-center border border-blue-100">
-                <h3 className="text-lg font-medium text-slate-900">{t('rated')} {property.rating}/5</h3>
-                <p className="text-slate-500 mb-4">{t('basedOn')} {property.review_count} {t('realTravelers')}.</p>
-                <button className="px-6 py-2 bg-white border border-slate-300 rounded-full font-medium hover:bg-slate-50 text-slate-700">
-                  {t('readAll')}
-                </button>
-             </div>
-           </section>
+            <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('guestReviews')}</h2>
+            <div className="bg-blue-50/50 p-8 rounded-2xl text-center border border-blue-100">
+              <h3 className="text-lg font-medium text-slate-900">{t('rated')} {property.rating}/5</h3>
+              <p className="text-slate-500 mb-4">{t('basedOn')} {property.review_count} {t('realTravelers')}.</p>
+              <button className="px-6 py-2 bg-white border border-slate-300 rounded-full font-medium hover:bg-slate-50 text-slate-700">
+                {t('readAll')}
+              </button>
+            </div>
+          </section>
 
         </div>
 
         {/* RIGHT COLUMN: Booking Sidebar */}
         <div className="relative">
-           <BookingSidebar property={property} isHotel={isHotel} t={t} />
+          <BookingSidebar property={property} isHotel={isHotel} t={t} />
         </div>
 
       </div>
