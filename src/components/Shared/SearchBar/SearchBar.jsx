@@ -1,21 +1,40 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { usePathname } from "next/navigation"; // 1. Import this to detect current page
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css"; // Keep this import
-import { FaCalendarAlt, FaMapMarkerAlt, FaUser, FaMinus, FaPlus, FaBed, FaUtensils } from "react-icons/fa";
+import "react-datepicker/dist/react-datepicker.css";
+import { 
+  FaCalendarAlt, 
+  FaMapMarkerAlt, 
+  FaUser, 
+  FaMinus, 
+  FaPlus, 
+  FaBed, 
+  FaUtensils,
+  FaSpinner 
+} from "react-icons/fa";
 import { format } from "date-fns";
 import { useTranslations } from 'next-intl';
 import { useSearchForm } from "@/hooks/useSearchForm";
+import { useCities } from "@/hooks/useCities";
 
+// --- Helper Component for Guest Counter ---
 const GuestCounter = ({ label, value, onUpdate, min = 0 }) => (
   <div className="flex justify-between items-center mb-4">
     <span className="font-medium text-gray-800 text-base">{label}</span>
     <div className="flex items-center border border-gray-300 rounded-md">
-      <button onClick={() => onUpdate('dec')} disabled={value <= min} className="w-12 h-12 flex items-center justify-center text-blue-600 hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed">
+      <button 
+        onClick={(e) => { e.stopPropagation(); onUpdate('dec'); }} 
+        disabled={value <= min} 
+        className="w-12 h-12 flex items-center justify-center text-blue-600 hover:bg-blue-50 disabled:opacity-30 disabled:cursor-not-allowed"
+      >
         <FaMinus size={14} />
       </button>
       <span className="w-10 text-center text-base font-semibold">{value}</span>
-      <button onClick={() => onUpdate('inc')} className="w-12 h-12 flex items-center justify-center text-blue-600 hover:bg-blue-50">
+      <button 
+        onClick={(e) => { e.stopPropagation(); onUpdate('inc'); }} 
+        className="w-12 h-12 flex items-center justify-center text-blue-600 hover:bg-blue-50"
+      >
         <FaPlus size={14} />
       </button>
     </div>
@@ -24,23 +43,38 @@ const GuestCounter = ({ label, value, onUpdate, min = 0 }) => (
 
 const SearchBar = () => {
   const t = useTranslations('SearchBar');
+  const pathname = usePathname(); // 2. Get current URL path
 
+  // --- Search Form State ---
   const {
     serviceType, setServiceType, destination, setDestination,
     dateRange, setDateRange, singleDate, setSingleDate,
     guests, handleGuestChange, handleSearch
   } = useSearchForm();
 
-  // UI State
+  // --- Auto-Select 'Restaurant' based on URL ---
+  useEffect(() => {
+    // 3. Logic: If URL contains 'restaurant', switch tab automatically
+    if (pathname && pathname.includes('restaurant')) {
+      setServiceType('restaurants');
+    }
+  }, [pathname, setServiceType]);
+
+  // --- API Data Integration ---
+  const { data: citiesList, isLoading: isCitiesLoading } = useCities();
+
+  // --- UI Visibility State ---
   const [openLocation, setOpenLocation] = useState(false);
   const [openDate, setOpenDate] = useState(false);
   const [openGuests, setOpenGuests] = useState(false);
+  
   const locationRef = useRef(null);
   const dateRef = useRef(null);
   const guestsRef = useRef(null);
 
   const [startDate, endDate] = dateRange;
 
+  // --- Click Outside Handler ---
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (locationRef.current && !locationRef.current.contains(event.target)) setOpenLocation(false);
@@ -51,9 +85,22 @@ const SearchBar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // --- Filter Cities Logic ---
+  const filteredCities = useMemo(() => {
+    if (!citiesList) return [];
+    if (!destination) return citiesList; 
+    return citiesList.filter((city) => 
+      city.name.toLowerCase().includes(destination.toLowerCase())
+    );
+  }, [citiesList, destination]);
+
+  const handleCitySelect = (cityName) => {
+    setDestination(cityName);
+    setOpenLocation(false);
+  };
+
   return (
-    // FIX 2: Added z-50 here to ensure the whole bar sits on top of other content
-    <div className="w-full max-w-[1140px] mx-auto relative font-sans text-gray-800 z-50">
+    <div className="w-full max-w-[1140px] relative font-sans text-gray-800 z-50">
 
       {/* --- TABS --- */}
       <div className="flex gap-2 mb-2 ml-1">
@@ -69,13 +116,49 @@ const SearchBar = () => {
       <div className="bg-[#febb02] p-1 rounded-md shadow-lg relative z-50">
         <div className="grid grid-cols-12 lg:flex lg:flex-row gap-1 lg:h-[64px]">
 
-          {/* Location */}
+          {/* --- LOCATION INPUT & DROPDOWN --- */}
           <div className="col-span-12 relative flex-1 bg-white rounded" ref={locationRef}>
             <div className={`flex items-center gap-3 px-4 py-4 h-full hover:bg-gray-50 rounded cursor-pointer transition ${openLocation ? 'bg-gray-100' : ''}`} onClick={() => setOpenLocation(true)}>
               <FaMapMarkerAlt className="text-gray-500 text-xl shrink-0" />
-              <input type="text" placeholder={t('slogan')} value={destination} onChange={(e) => setDestination(e.target.value)} className="w-full bg-transparent focus:outline-none text-gray-800 font-medium placeholder:text-gray-500 text-base truncate" />
+              <input 
+                type="text" 
+                placeholder={t('slogan')} 
+                value={destination} 
+                onChange={(e) => {
+                    setDestination(e.target.value);
+                    setOpenLocation(true); 
+                }} 
+                className="w-full bg-transparent focus:outline-none text-gray-800 font-medium placeholder:text-gray-500 text-base truncate" 
+              />
             </div>
-            {/* Dropdown would go here */}
+
+            {/* --- LOCATION DROPDOWN --- */}
+            {openLocation && (
+              <div className="absolute top-full left-0 mt-2 w-full bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50 max-h-[300px] overflow-y-auto">
+                {isCitiesLoading ? (
+                  <div className="p-4 flex items-center gap-2 text-gray-500">
+                    <FaSpinner className="animate-spin" /> {t('loading_cities') || "Loading..."}
+                  </div>
+                ) : filteredCities.length > 0 ? (
+                  <ul>
+                    {filteredCities.map((city, index) => (
+                      <li 
+                        key={city.id || index} 
+                        onClick={() => handleCitySelect(city.name)}
+                        className="px-4 py-3 hover:bg-gray-100 cursor-pointer flex items-center gap-3 transition border-b border-gray-50 last:border-none"
+                      >
+                        <FaMapMarkerAlt className="text-gray-400" />
+                        <span className="text-gray-700 font-medium">{city.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="p-4 text-gray-500 text-sm">
+                    {t('no_cities_found') || "No cities found"}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* --- DATE INPUT --- */}
@@ -90,7 +173,6 @@ const SearchBar = () => {
             </div>
 
             {openDate && (
-              // FIX 3: Added z-50 and removed "overflow-hidden" from this wrapper so shadow shows
               <div className="absolute top-full left-0 mt-3 bg-white p-4 rounded-xl shadow-2xl border border-gray-200 z-50 w-full sm:w-auto">
                 <DatePicker
                   selected={serviceType === 'hotels' ? startDate : singleDate}
@@ -134,14 +216,13 @@ const SearchBar = () => {
           </div>
 
           {/* Search Button */}
-         <div className="col-span-12 lg:w-auto">
+          <div className="col-span-12 lg:w-auto">
             <button onClick={handleSearch} className="bg-[#003b95] text-white font-bold h-full w-full px-8 py-3 rounded shadow-sm hover:bg-[#00224f] transition">
               {t('search')}
             </button>
           </div>
         </div>
       </div>
-
     </div>
   );
 };

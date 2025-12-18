@@ -54,6 +54,8 @@ export default function PropertyDetailsPage() {
                   <Share2 className="w-5 h-5" />
                 </button>
 
+                <WishButton item={property} />
+
               </div>
             </div>
 

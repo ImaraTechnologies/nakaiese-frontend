@@ -162,13 +162,7 @@ const BookingWidget = ({
                       onUpdate={(op) => handleGuestChange('children', op)}
                       min={0}
                     />
-                    <div className="h-px bg-slate-100 my-3"></div>
-                    <GuestCounter
-                      label={t('rooms_label')}
-                      value={guests.rooms}
-                      onUpdate={(op) => handleGuestChange('rooms', op)}
-                      min={1}
-                    />
+                    
                   </>
                 ) : (
                   <GuestCounter
