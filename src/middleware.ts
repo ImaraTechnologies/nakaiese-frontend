@@ -10,7 +10,7 @@ export default function middleware(request) {
 
   // 2. Define PROTECTED Routes
   // These pages require the user to be logged in.
-  const protectedRoutes = ['/profile', '/bookings', '/wishlist', '/settings'];
+  const protectedRoutes = ['/profile', '/vendor', '/dashboard'];
 
   // 3. Normalize the path (Remove /en or /fr to check the actual route)
   // e.g., "/fr/profile" becomes "/profile"

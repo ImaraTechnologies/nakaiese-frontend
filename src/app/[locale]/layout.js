@@ -7,6 +7,7 @@ import { routing } from '@/i18n/routing';
 import { cookies } from 'next/headers';
 import Providers from "./providers"; 
 import "../globals.css";
+import ScrollManager from "@/components/Shared/ScrollManager/ScrollManager";
 
 
 const geistSans = Geist({
@@ -34,8 +35,6 @@ export default async function LocaleLayout({ children, params }) {
   const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
 
-
-
   let initialUser = null;
   if (token) {
     initialUser = await verifyToken(token);
@@ -46,6 +45,7 @@ export default async function LocaleLayout({ children, params }) {
   return (
     <html lang={locale} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ScrollManager/>
         <NextIntlClientProvider messages={messages}>
            {/* ✅ Pass initialUser to Providers, which passes it to AuthProvider */}
            <Providers initialUser={initialUser}>

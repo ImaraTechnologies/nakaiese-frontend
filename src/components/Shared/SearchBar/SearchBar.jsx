@@ -7,7 +7,6 @@ import { format } from "date-fns";
 import { useTranslations } from 'next-intl';
 import { useSearchForm } from "@/hooks/useSearchForm";
 
-// ... Keep your GuestCounter component exactly as it is ...
 const GuestCounter = ({ label, value, onUpdate, min = 0 }) => (
   <div className="flex justify-between items-center mb-4">
     <span className="font-medium text-gray-800 text-base">{label}</span>

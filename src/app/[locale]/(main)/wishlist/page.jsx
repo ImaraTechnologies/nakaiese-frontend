@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import Container from '@/components/Shared/Container/Container';
 import useWishStore from '@/store/useWishStore';
 import PropertyCard from '@/components/Shared/Card/Card';
+import { FullPageSpinner } from '@/components/ui/Spinner/Spinner';
 
 export default function WishlistPage() {
   const t = useTranslations('WishlistPage');
@@ -24,7 +25,7 @@ export default function WishlistPage() {
   }, []);
 
   if (!isMounted) {
-    return <div className="min-h-screen bg-gray-50" />;
+    return <FullPageSpinner/>;
   }
 
   return (

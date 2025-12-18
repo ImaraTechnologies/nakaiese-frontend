@@ -507,7 +507,16 @@
     "copyright": "© {year} Nakiese. All rights reserved."
   },
   "Property": {
-    "more":"Explore More",
+    "adults_label": "Adults",
+    "children_label": "Children",
+    "rooms_label": "Rooms",
+    "done": "Done",
+    "viewAll": "View All",
+    "check_in": "Check In",
+    "check_out": "Check Out",
+    "check_availability": "Check Availability",
+    "no_charge_message": "You won’t be charged yet",
+    "more": "Explore More",
     "gallery": "Gallery",
     "typeLabel": "Type",
     "hotel": "Hotel & Resort",

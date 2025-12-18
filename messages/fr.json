@@ -181,7 +181,7 @@
       "modal_title": "Changer le mot de passe"
     },
     "placeholders": {
-        "enter_password": "Entrez votre mot de passe"
+      "enter_password": "Entrez votre mot de passe"
     },
     "two_factor": {
       "title": "Authentification 2FA",
@@ -224,7 +224,7 @@
       "password_incorrect": "Mot de passe incorrect."
     }
   },
- "Booking": {
+  "Booking": {
     "title": "Mes Réservations",
     "subtitle": "Gérez et consultez votre historique de réservations.",
     "tabs": {
@@ -291,10 +291,22 @@
       "title": "Rencontrez les Visionnaires",
       "subtitle": "Une équipe diversifiée de passionnés de voyage, d'experts technologiques et de vétérans de l'hôtellerie travaillant ensemble pour rendre votre voyage inoubliable.",
       "members": {
-        "amara": { "role": "Fondatrice & PDG", "bio": "Leader visionnaire avec plus de 15 ans d'expérience dans le développement du tourisme africain." },
-        "david": { "role": "Chef des Opérations", "bio": "Assure des expériences fluides de la réservation au départ." },
-        "sarah": { "role": "Curatrice Principale", "bio": "Vérifie personnellement chaque hôtel et restaurant sur notre plateforme." },
-        "james": { "role": "Directeur Technique", "bio": "Construit l'infrastructure technologique robuste qui propulse Nakiese." }
+        "amara": {
+          "role": "Fondatrice & PDG",
+          "bio": "Leader visionnaire avec plus de 15 ans d'expérience dans le développement du tourisme africain."
+        },
+        "david": {
+          "role": "Chef des Opérations",
+          "bio": "Assure des expériences fluides de la réservation au départ."
+        },
+        "sarah": {
+          "role": "Curatrice Principale",
+          "bio": "Vérifie personnellement chaque hôtel et restaurant sur notre plateforme."
+        },
+        "james": {
+          "role": "Directeur Technique",
+          "bio": "Construit l'infrastructure technologique robuste qui propulse Nakiese."
+        }
       }
     }
   },
@@ -495,7 +507,16 @@
     "copyright": "© {year} Nakiese. Tous droits réservés."
   },
   "Property": {
-    "more":"Explorer Plus",
+    "adults_label": "Adultes",
+    "children_label": "Enfants",
+    "rooms_label": "Chambres",
+    "done": "Terminé",
+    "viewAll": "Tout voir",
+    "check_in": "Arrivée",
+    "check_out": "Départ",
+    "check_availability": "Voir les disponibilités",
+    "no_charge_message": "Vous ne serez pas débité",
+    "more": "Explorer Plus",
     "gallery": "Galerie",
     "typeLabel": "Type",
     "hotel": "Hôtel & Complexe",

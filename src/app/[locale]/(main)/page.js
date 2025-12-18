@@ -13,6 +13,7 @@ import SignInBanner from "@/components/Shared/SignInBanner/SignInBanner";
 import WhyChooseUs from "@/components/Shared/WhyChooseUs/WhyChooseUs";
 import Testimonials from "@/components/Shared/Testimonials/Testimonials";
 import Newsletter from "@/components/Shared/Newsletter/Newsletter";
+import { FullPageSpinner } from '@/components/ui/Spinner/Spinner';
 
 // Keep destinations static for now (or move to a config file)
 const destinationItems = [
@@ -44,9 +45,7 @@ export default function Home() {
   // In a real app, you might want to show skeletons for each section independently
   if (hotelsLoading || restaurantsLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="animate-pulse text-blue-600 font-semibold">Loading experiences...</div>
-      </div>
+      <FullPageSpinner/>
     );
   }
 
