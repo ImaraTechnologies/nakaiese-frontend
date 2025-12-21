@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Filter, ChevronDown, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useProperties } from '@/hooks/useProperties';
@@ -9,10 +9,21 @@ import PageHeader from '@/components/Shared/Hotels/PageHeader';
 import FilterSection from '@/components/Shared/Hotels/FilterSection';
 import HotelGrid from '@/components/Shared/Hotels/HotelGrid';
 import MobileFilterDrawer from '@/components/Shared/MobileFilterDrawer/MobileFilterDrawer';
+import { useSearchParams } from 'next/navigation';
 
 export default function HotelsPage() {
   const t = useTranslations('HotelsPage');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const searchParams = useSearchParams();
+
+  const filters = useMemo(() => {
+    const params = Object.fromEntries(searchParams.entries());
+
+    return {
+      ...params,
+      property_type: 'HL', 
+    };
+  }, [searchParams]);
 
   const {
     data,
@@ -20,7 +31,7 @@ export default function HotelsPage() {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = useProperties({ property_type: 'HL' });
+  } = useProperties(filters);
 
 
   const allHotels = data?.pages.flatMap((page) => page.results) || [];
