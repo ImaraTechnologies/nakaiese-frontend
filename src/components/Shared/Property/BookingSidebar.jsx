@@ -1,26 +1,38 @@
-'use client'; // Required for Next.js App Router
+'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, Clock, Users, ChevronDown, Minus, Plus } from 'lucide-react';
-import { useTranslations, useFormatter } from 'next-intl';
+import { Calendar, Clock, Users, ChevronDown, Minus, Plus, Loader2, AlertCircle } from 'lucide-react';
+import { useAvailability } from '@/hooks/useAvailability';
 
 const BookingWidget = ({
   isHotel = true,
-  // We assume these are passed as translation keys or raw strings. 
-  // Ideally, pass the key "price_start" and "unit_night" from parent
-  priceLabel = "price_start",
-  unitLabel = "unit_night",
   t,
-  property,
+  property, // We need the property object for ID and Type
+  onAvailabilityFound // Callback to pass data to parent (e.g., to show RoomList)
 }) => {
 
-  // --- Internationalization Hooks ---
-  // Assuming your JSON structure is nested under "BookingWidget"
-  const format = useFormatter();
+  // --- 1. Initialize Hook ---
+  const { 
+    checkAvailability, 
+    loading, 
+    error, 
+    availableItems 
+  } = useAvailability(property?.id, property?.property_type);
 
-  // --- State & Refs ---
+  // --- 2. State & Refs ---
   const [openGuests, setOpenGuests] = useState(false);
   const guestsRef = useRef(null);
+
+  // FIXED: Moved Date.now() inside the useState initializer to make it pure
+  const [dates, setDates] = useState(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    return {
+      checkIn: today,
+      checkOut: tomorrow,
+      time: '19:00'
+    };
+  });
 
   const [guests, setGuests] = useState({
     adults: 2,
@@ -29,8 +41,9 @@ const BookingWidget = ({
     people: 2
   });
 
-  // --- Logic ---
-
+  // --- 3. Effects ---
+  
+  // Click Outside Listener
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (guestsRef.current && !guestsRef.current.contains(event.target)) {
@@ -41,102 +54,148 @@ const BookingWidget = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Watch for successful data fetch and notify parent
+  useEffect(() => {
+    if (availableItems) {
+      // Pass the results up to the Page component to render the Room List or Table Map
+      if (onAvailabilityFound) {
+        onAvailabilityFound(availableItems);
+      }
+    }
+  }, [availableItems, onAvailabilityFound]);
+
+
+  // --- 4. Handlers ---
+
+  const handleSearch = () => {
+    // Construct the filter object based on Property Type
+    const filters = {
+      checkIn: dates.checkIn,
+      guests: guests // Pass the whole object, the hook handles the math
+    };
+
+    if (isHotel) {
+      filters.checkOut = dates.checkOut;
+    } else {
+      filters.time = dates.time;
+    }
+
+    // Trigger the hook
+    checkAvailability(filters);
+  };
+
   const handleGuestChange = (type, operation) => {
     setGuests(prev => {
       const newValue = operation === 'inc' ? prev[type] + 1 : prev[type] - 1;
       const minValue = (type === 'children') ? 0 : 1;
-
       if (newValue < minValue) return prev;
       return { ...prev, [type]: newValue };
     });
   };
 
-  // --- Dynamic Label Generation with Pluralization ---
-  // note: We use {count} so next-intl handles "1 Adult" vs "2 Adults" automatically
+  const handleDateChange = (field, value) => {
+    setDates(prev => ({ ...prev, [field]: value }));
+  };
+
   const getGuestLabel = () => {
     if (isHotel) {
       const parts = [t('adults', { count: guests.adults })];
-
-      if (guests.children > 0) {
-        parts.push(t('children', { count: guests.children }));
-      }
-      // Only show room count if > 1 to save space, or always if you prefer
-      if (guests.rooms > 1) {
-        parts.push(t('rooms', { count: guests.rooms }));
-      }
+      if (guests.children > 0) parts.push(t('children', { count: guests.children }));
+      if (guests.rooms > 1) parts.push(t('rooms', { count: guests.rooms }));
       return parts.join(', ');
     }
     return t('people', { count: guests.people });
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 w-full max-w-md">
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 w-full max-w-md sticky top-24 transition-all duration-200">
 
-      {/* 1. Price Header */}
-      <div className="mb-6">
-        {/* Try to translate the label, fallback to prop if not found */}
-        <span className="text-slate-400 text-sm">{t.has(priceLabel) ? t(priceLabel) : priceLabel}</span>
-        <div className="flex items-baseline gap-1">
-          <span className="text-3xl font-extrabold text-slate-900">
-           {
-
-           }
-          </span>
-          {/*
-          {displayPrice > 0 && (
-            <span className="text-slate-500 text-sm">
-               Try to translate unit, fallback to prop 
-              {t.has(unitLabel) ? t(unitLabel) : unitLabel}
-            </span>
-          )}
-               */}
-        </div>
+      {/* Header */}
+      <div className="mb-6 border-b border-slate-100 pb-4">
+        <h3 className="text-xl font-extrabold text-slate-900">
+          {isHotel ? t('check_availability_box_title') : t('reserve_table_box_title')}
+        </h3>
       </div>
 
-      {/* 2. Inputs Container */}
+      {/* Error Message (Dismissible or Auto-hide logic in Hook) */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg flex items-start gap-2 text-red-600 animate-in fade-in slide-in-from-top-1">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span className="text-sm font-medium">{error}</span>
+        </div>
+      )}
+
+      {/* Inputs Container */}
       <div className="space-y-4">
 
         {/* Date/Time Row */}
         <div className="grid grid-cols-2 gap-3">
+          
+          {/* Check-in */}
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase text-slate-400">
+            <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wide">
               {isHotel ? t('check_in') : t('date')}
             </label>
-            <div className="relative">
-              <Calendar className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none" />
-              <input type="date" className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none text-slate-700" />
+            <div className="relative group">
+              <Calendar className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
+              <input 
+                type="date" 
+                min={new Date().toISOString().split('T')[0]}
+                value={dates.checkIn}
+                onChange={(e) => handleDateChange('checkIn', e.target.value)}
+                className="w-full pl-10 pr-2 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium transition-all hover:bg-slate-100" 
+              />
             </div>
           </div>
 
+          {/* Check-out / Time */}
           <div className="space-y-1">
-            <label className="text-xs font-bold uppercase text-slate-400">
+            <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wide">
               {isHotel ? t('check_out') : t('time')}
             </label>
-            <div className="relative">
-              {isHotel ? <Calendar className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none" /> : <Clock className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none" />}
+            <div className="relative group">
               {isHotel ? (
-                <input type="date" className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none text-slate-700" />
+                <>
+                  <Calendar className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
+                  <input 
+                    type="date" 
+                    min={dates.checkIn}
+                    value={dates.checkOut}
+                    onChange={(e) => handleDateChange('checkOut', e.target.value)}
+                    className="w-full pl-10 pr-2 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 font-medium transition-all hover:bg-slate-100" 
+                  />
+                </>
               ) : (
-                <select className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-yellow-500 outline-none appearance-none bg-slate-50 text-slate-700 cursor-pointer">
-                  <option>19:00</option>
-                  <option>20:00</option>
-                </select>
+                <>
+                  <Clock className="w-4 h-4 absolute left-3 top-3 text-slate-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
+                  <select 
+                    value={dates.time}
+                    onChange={(e) => handleDateChange('time', e.target.value)}
+                    className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-slate-700 font-medium cursor-pointer hover:bg-slate-100 transition-all"
+                  >
+                    {/* Mock Times - In production, fetch available slots from API if possible */}
+                    <option value="18:00">18:00</option>
+                    <option value="19:00">19:00</option>
+                    <option value="20:00">20:00</option>
+                    <option value="21:00">21:00</option>
+                    <option value="22:00">22:00</option>
+                  </select>
+                </>
               )}
             </div>
           </div>
         </div>
 
-        {/* 3. Guests Selector */}
+        {/* Guests Selector */}
         <div className="space-y-1" ref={guestsRef}>
-          <label className="text-xs font-bold uppercase text-slate-400">
+          <label className="text-[10px] font-bold uppercase text-slate-400 tracking-wide">
             {isHotel ? t('guests') : t('party_size')}
           </label>
           <div className="relative">
-
             {/* Trigger */}
             <div
               onClick={() => setOpenGuests(!openGuests)}
-              className={`w-full pl-10 pr-3 py-2.5 bg-slate-50 border ${openGuests ? 'border-yellow-500 ring-1 ring-yellow-500' : 'border-slate-200'} rounded-lg text-sm cursor-pointer flex items-center justify-between transition-all select-none`}
+              className={`w-full pl-10 pr-3 py-2.5 bg-slate-50 border ${openGuests ? 'border-blue-500 ring-1 ring-blue-500 bg-white' : 'border-slate-200 hover:bg-slate-100'} rounded-lg text-sm cursor-pointer flex items-center justify-between transition-all select-none`}
             >
               <div className="flex items-center gap-2 overflow-hidden">
                 <Users className="w-4 h-4 text-slate-400 shrink-0 absolute left-3" />
@@ -147,34 +206,19 @@ const BookingWidget = ({
 
             {/* Popover */}
             {openGuests && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white p-5 shadow-xl rounded-xl z-50 border border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white p-4 shadow-xl rounded-xl z-50 border border-slate-100 animate-in fade-in slide-in-from-top-2 duration-200">
                 {isHotel ? (
                   <>
-                    <GuestCounter
-                      label={t('adults_label')} // Static label for the counter row
-                      value={guests.adults}
-                      onUpdate={(op) => handleGuestChange('adults', op)}
-                      min={1}
-                    />
-                    <GuestCounter
-                      label={t('children_label')}
-                      value={guests.children}
-                      onUpdate={(op) => handleGuestChange('children', op)}
-                      min={0}
-                    />
-                    
+                    <GuestCounter label={t('adults_label')} value={guests.adults} onUpdate={(op) => handleGuestChange('adults', op)} min={1} />
+                    <GuestCounter label={t('children_label')} value={guests.children} onUpdate={(op) => handleGuestChange('children', op)} min={0} />
+                    <div className="my-3 border-t border-slate-100" />
+                    <GuestCounter label={t('rooms_label')} value={guests.rooms} onUpdate={(op) => handleGuestChange('rooms', op)} min={1} />
                   </>
                 ) : (
-                  <GuestCounter
-                    label={t('people_label')}
-                    value={guests.people}
-                    onUpdate={(op) => handleGuestChange('people', op)}
-                    min={1}
-                  />
+                  <GuestCounter label={t('people_label')} value={guests.people} onUpdate={(op) => handleGuestChange('people', op)} min={1} />
                 )}
-
                 <button
-                  className="w-full mt-4 py-2.5 text-sm bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition"
+                  className="w-full mt-4 py-2.5 text-sm bg-slate-900 text-white rounded-lg font-bold hover:bg-slate-800 transition shadow-sm"
                   onClick={() => setOpenGuests(false)}
                 >
                   {t('done')}
@@ -184,35 +228,51 @@ const BookingWidget = ({
           </div>
         </div>
 
-        {/* 4. Action Button */}
-        <button className="w-full mt-4 bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-lg shadow-lg shadow-yellow-500/30 transition-all active:scale-[0.98]">
-          {isHotel ? t('check_availability') : t('reserve_table')}
+        {/* Action Button */}
+        <button 
+          onClick={handleSearch}
+          disabled={loading}
+          className="w-full mt-2 bg-[#006ce4] hover:bg-[#0057b8] text-white font-bold py-3.5 rounded-lg shadow-sm transition-all active:scale-[0.98] text-sm disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Checking...</span>
+            </>
+          ) : (
+            isHotel ? t('check_availability') : t('reserve_table')
+          )}
         </button>
 
-        <p className="text-xs text-center text-slate-400 mt-2">
-          {isHotel ? t('no_charge_message') : t('instant_confirmation')}
-        </p>
+        {/* Footer Note */}
+        <div className="flex items-center justify-center gap-2 mt-2">
+            {!loading && <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>}
+            <p className="text-xs text-slate-500 font-medium">
+            {isHotel ? t('no_charge_message') : t('instant_confirmation')}
+            </p>
+        </div>
       </div>
     </div>
   );
 };
 
+// ... GuestCounter component remains the same ...
 const GuestCounter = ({ label, value, onUpdate, min = 0 }) => (
   <div className="flex justify-between items-center mb-3 last:mb-0">
-    <span className="font-medium text-slate-700 text-sm capitalize">{label}</span>
+    <span className="font-semibold text-slate-700 text-sm">{label}</span>
     <div className="flex items-center gap-3">
       <button
         onClick={(e) => { e.stopPropagation(); onUpdate('dec'); }}
         disabled={value <= min}
-        className="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:border-yellow-500 hover:text-yellow-600 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-slate-200 transition-colors bg-white"
+        className="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:border-blue-500 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-slate-200 transition-colors bg-white"
         type="button"
       >
         <Minus size={14} />
       </button>
-      <span className="w-6 text-center text-sm font-semibold text-slate-900">{value}</span>
+      <span className="w-4 text-center text-sm font-bold text-slate-900">{value}</span>
       <button
         onClick={(e) => { e.stopPropagation(); onUpdate('inc'); }}
-        className="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:border-yellow-500 hover:text-yellow-600 transition-colors bg-white"
+        className="w-8 h-8 flex items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:border-blue-500 hover:text-blue-600 transition-colors bg-white"
         type="button"
       >
         <Plus size={14} />

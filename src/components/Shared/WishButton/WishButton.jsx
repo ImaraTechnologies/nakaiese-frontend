@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import useWishStore from '@/store/useWishStore';
 import { Heart } from 'lucide-react';
 
-const WishButton = ({ item }) => {
+const WishButton = ({ item, customClass='absolute top-3 right-3' }) => {
     // FIX: Hook called unconditionally at the top level
     const { wishes, addWish, removeWish } = useWishStore();
 
@@ -26,7 +26,7 @@ const WishButton = ({ item }) => {
         <button
             onClick={handleWishlistToggle}
             className={`
-                absolute top-3 right-3 p-2 z-10 rounded-full 
+                ${customClass} p-2 z-10 rounded-full 
                 transition-all shadow-sm backdrop-blur-sm
                 ${isInWishlist
                     ? 'bg-red-50 text-red-500 hover:bg-red-100'

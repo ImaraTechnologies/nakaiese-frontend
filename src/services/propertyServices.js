@@ -44,3 +44,45 @@ export const getPropertyById = async (id, locale = 'en') => {
         throw new Error(message);
     }
 };
+
+export async function checkAvailability(propertyId, { 
+    checkin, 
+    checkout, 
+    time, 
+    guests, 
+    rooms, 
+    locale = 'en' // Default locale handled here
+} = {}) {
+
+    try {
+        const params = new URLSearchParams();
+        
+        // --- Common Params ---
+        params.append('id', propertyId);
+        params.append('guests', guests || 1);
+        
+        if (checkin) params.append('checkin', checkin);
+
+        // --- Conditional Params (Hybrid Logic) ---
+        if (checkout) params.append('checkout', checkout);
+        if (time) params.append('time', time);
+        if (rooms) params.append('rooms', rooms);
+
+        console.log("Availability Check Params:", params.toString());
+
+        // 1. Call Next.js Proxy Route (Recommended)
+        // Ensure this matches the route you created in src/app/api/check-availability/route.js
+        const response = await localapi.get(`/properties/search/?${params.toString()}`, {
+            headers: {
+                'Accept-Language': locale 
+            }
+        });
+
+        return response.data;
+
+    } catch (error) {
+        console.error("Availability Check Error:", error);
+        const message = error.response?.data?.error || error.message || "Availability check failed";
+        throw new Error(message);
+    }
+}

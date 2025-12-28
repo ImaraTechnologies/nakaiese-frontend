@@ -14,6 +14,7 @@ import MenuDisplay from '@/components/Shared/Property/MenuDisplay'; // Create th
 import WishButton from '@/components/Shared/WishButton/WishButton';
 import SeatingOptions from '@/components/Shared/Property/SeatingOptions';
 import { FullPageSpinner } from '@/components/ui/Spinner/Spinner';
+import PropertyFAQ from '@/components/Shared/Property/PropertyFAQ';
 
 export default function PropertyDetailsPage() {
   const params = useParams();
@@ -23,7 +24,7 @@ export default function PropertyDetailsPage() {
   // Fetch Data using Hook
   const { data: property, isLoading, error } = useProperty(params.slug);
 
-  if (isLoading) return <FullPageSpinner/>;
+  if (isLoading) return <FullPageSpinner />;
   if (error || !property) return <div className="h-screen flex items-center justify-center">Error loading property</div>;
 
   const isHotel = property.property_type === 'HL';
@@ -54,7 +55,7 @@ export default function PropertyDetailsPage() {
                   <Share2 className="w-5 h-5" />
                 </button>
 
-                <WishButton item={property} />
+                <WishButton item={property} customClass={"relative"} />
 
               </div>
             </div>
@@ -99,6 +100,8 @@ export default function PropertyDetailsPage() {
               <SeatingOptions tables={property.tables} t={t} />
             )}
           </section>
+
+          <PropertyFAQ property={property} t={t} />
 
           {/* Reviews Placeholder */}
           <section className="pt-8 border-t border-slate-200">
