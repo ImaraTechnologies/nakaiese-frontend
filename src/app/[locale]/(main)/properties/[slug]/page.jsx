@@ -127,19 +127,7 @@ export default function PropertyDetailsPage() {
 
           {/* DYNAMIC ROOM/TABLE LIST */}
           <section id="inventory-list" className="pt-8 border-t border-slate-200 scroll-mt-28">
-            <div className="flex items-center justify-between mb-6">
-               <h2 className="text-2xl font-bold text-slate-900">
-                 {isHotel ? t('availableRooms') : t('availableTables')}
-               </h2>
-               
-               {/* Show Filter Status Badge */}
-               {isFiltered && (
-                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium animate-in fade-in">
-                   <Info className="w-4 h-4" />
-                   {t('showingFilteredResults', { count: displayedItems.length })}
-                 </span>
-               )}
-            </div>
+           
 
             {isHotel ? (
               <RoomList rooms={displayedItems} t={t} isFiltered={isFiltered} />
