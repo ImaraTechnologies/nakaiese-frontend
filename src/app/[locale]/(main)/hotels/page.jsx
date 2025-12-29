@@ -21,9 +21,11 @@ export default function HotelsPage() {
 
     return {
       ...params,
-      property_type: 'HL', 
+      property_type: 'HL',
     };
   }, [searchParams]);
+
+  const currentSearchString = searchParams.toString();
 
   const {
     data,
@@ -80,8 +82,12 @@ export default function HotelsPage() {
             </div>
 
             {/* Grid */}
-            <HotelGrid hotels={allHotels} isLoading={isLoading} t={t} />
-
+            <HotelGrid
+              hotels={allHotels}
+              searchParamsString={currentSearchString}
+              isLoading={isLoading}
+              t={t}
+            />
             {/* Load More Button */}
             <div className="mt-12 text-center">
               {hasNextPage ? (

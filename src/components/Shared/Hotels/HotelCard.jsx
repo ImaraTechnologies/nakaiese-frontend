@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { MapPin, Star, Heart } from 'lucide-react';
 import WishButton from '../WishButton/WishButton';
 
-const HotelCard = ({ data, t }) => {
+const HotelCard = ({ data, searchParamsString = "", t }) => {
     // 1. CONFIG
     const API_URL = process.env.NEXT_PUBLIC_MEDIA_BASE_URL || 'http://127.0.0.1:8000';
 
@@ -28,9 +28,13 @@ const HotelCard = ({ data, t }) => {
         style: 'currency', currency: 'USD', maximumFractionDigits: 0,
     }).format(data.min_price || 0);
 
+    const propertyUrl = searchParamsString
+        ? `/properties/${data.id}?${searchParamsString}`
+        : `/properties/${data.id}`;
+
     return (
         <Link
-            href={`/properties/${data.id}`}
+            href={propertyUrl}
             className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full"
         >
             <div className="relative h-48 overflow-hidden bg-gray-100">
@@ -47,7 +51,7 @@ const HotelCard = ({ data, t }) => {
                         Top Rated
                     </span>
                 )}
-                <WishButton item={data}/>
+                <WishButton item={data} />
             </div>
 
             <div className="p-5 flex flex-col grow">

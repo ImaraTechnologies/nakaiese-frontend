@@ -4,8 +4,10 @@ import { Search } from 'lucide-react';
 import HotelCard from './HotelCard';
 
 
-export default function HotelGrid({ hotels, isLoading, t }) {
-  
+export default function HotelGrid({ hotels, isLoading, searchParamsString = '', t }) {
+
+
+
   // 1. Initial Loading State (Skeletons)
   if (isLoading) {
     return (
@@ -39,8 +41,12 @@ export default function HotelGrid({ hotels, isLoading, t }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {hotels.map((hotel) => (
-        <HotelCard key={hotel.id} data={hotel} t={t} />
-      ))}
+        <HotelCard
+          key={hotel.id}
+          data={hotel}
+          searchParamsString={searchParamsString}
+          t={t}
+        />))}
     </div>
   );
 }
