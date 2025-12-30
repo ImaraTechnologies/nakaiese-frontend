@@ -21,6 +21,10 @@ export default function PropertyDetailsPage() {
   const searchParams = useSearchParams();
   const searchParamsString = searchParams.toString();
 
+  const [selectedSeating, setSelectedSeating] = useState(null);
+
+
+
 
   // 1. Fetch Property Data
   const { data: property, isLoading, error } = useProperty(params.slug);
@@ -130,9 +134,9 @@ export default function PropertyDetailsPage() {
 
             {isHotel ? (
               
-              <RoomList rooms={displayedItems} t={t} searchParamsString={searchParamsString} />
+              <RoomList rooms={displayedItems} propertyId={property.id} t={t} searchParamsString={searchParamsString} />
             ) : (
-              <SeatingOptions tables={displayedItems} t={t} isFiltered={isFiltered} />
+              <SeatingOptions tables={displayedItems} propertyId={property.id} searchParamsString={searchParamsString} t={t} isFiltered={isFiltered} onSelect={(type) => setSelectedSeating(type)} />
             )}
           </section>
 

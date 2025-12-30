@@ -507,6 +507,7 @@
     "copyright": "© {year} Nakiese. All rights reserved."
   },
   "Property": {
+    
     "title": "Property Details",
     "adults_label": "Adults",
     "children_label": "Children",
@@ -518,6 +519,7 @@
     "more": "Explore More",
     "gallery": "Gallery",
     "typeLabel": "Type",
+    "seatingOptions": "Seating Options",
     "hotel": "Hotel & Resort",
     "restaurant": "Fine Dining Restaurant",
     "excellent": "Excellent",
