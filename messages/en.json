@@ -506,15 +506,13 @@
     },
     "copyright": "© {year} Nakiese. All rights reserved."
   },
-"Property": {
+  "Property": {
     "title": "Property Details",
-    
     "adults_label": "Adults",
     "children_label": "Children",
     "rooms_label": "Rooms",
     "people_label": "People",
     "party_size": "Party Size",
-    
     "done": "Done",
     "viewAll": "View All",
     "more": "Explore More",
@@ -556,12 +554,12 @@
     "reserve_table_box_title": "Reserve a Table",
     "no_charge_message": "You won't be charged yet",
     "instant_confirmation": "Instant confirmation",
-    
+    "noRoomsTitle": "No matches found",
+    "noRoomsMessage": "We couldn't find any rooms that match your specific search criteria. Try adjusting your dates, guest count, or filters to see available options.",
     "adults": "{count, plural, =1 {1 Adult} other {# Adults}}",
     "children": "{count, plural, =1 {1 Child} other {# Children}}",
     "rooms": "{count, plural, =1 {1 Room} other {# Rooms}}",
     "people": "{count, plural, =1 {1 Person} other {# People}}",
-    
     "faq": {
       "title": "House Rules & FAQs",
       "check_in_out_q": "What are the check-in and check-out times?",
@@ -585,27 +583,23 @@
     "customer_details": "Your Details",
     "payment_method": "Payment Method",
     "complete_booking": "Complete Booking",
-    
     "first_name": "First Name",
     "last_name": "Last Name",
     "email": "Email Address",
     "phone": "Phone Number",
     "special_requests": "Special Requests",
     "requests_placeholder": "Late check-in, dietary restrictions, etc.",
-    
     "dates": "Dates",
     "reservation_time": "Time",
     "nights": "nights",
     "guests": "Guests",
     "adults": "Adults",
     "children": "Children",
-    
     "price_breakdown": "Price Breakdown",
     "table_reservation": "Table Reservation",
     "taxes_fees": "Taxes & Fees",
     "total": "Total",
     "free_cancel_msg": "Free cancellation until 24 hours before check-in",
-    
     "pay_card_label": "Pay with Card",
     "pay_card_sub": "Secure encrypted payment",
     "pay_cash_label": "Pay at Property",

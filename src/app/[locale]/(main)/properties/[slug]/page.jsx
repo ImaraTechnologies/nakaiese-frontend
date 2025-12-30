@@ -21,6 +21,7 @@ export default function PropertyDetailsPage() {
   const searchParams = useSearchParams();
   const searchParamsString = searchParams.toString();
 
+
   // 1. Fetch Property Data
   const { data: property, isLoading, error } = useProperty(params.slug);
 
@@ -30,14 +31,12 @@ export default function PropertyDetailsPage() {
 
   const isHotel = property?.property_type === 'HL';
 
-  // 3. Derived State (The Fix)
-  // If we have filtered items, use them. Otherwise, fall back to the Property's default lists.
-  // This runs instantly during render, so no useEffect is needed.
   const defaultItems = property ? (isHotel ? property.room_types : property.tables) : [];
   const displayedItems = filteredItems || defaultItems;
   
   // Calculate filter status based on whether filteredItems exists
   const isFiltered = filteredItems !== null;
+
 
   // 4. Handler: Receive Available Rooms from BookingWidget
   const handleAvailabilityUpdate = useCallback((availableData) => {
@@ -130,7 +129,8 @@ export default function PropertyDetailsPage() {
            
 
             {isHotel ? (
-              <RoomList rooms={displayedItems} t={t} isFiltered={isFiltered} />
+              
+              <RoomList rooms={displayedItems} t={t} searchParamsString={searchParamsString} />
             ) : (
               <SeatingOptions tables={displayedItems} t={t} isFiltered={isFiltered} />
             )}

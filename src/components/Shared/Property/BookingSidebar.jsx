@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types';
 import { Calendar, Clock, Users, ChevronDown, Minus, Plus, Loader2, AlertCircle } from 'lucide-react';
 import { useAvailability } from '@/hooks/useAvailability';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'; // Added hooks
 
 // --- Utility: Get Default Dates ---
 const getDefaults = () => {
@@ -64,34 +65,38 @@ GuestCounter.propTypes = {
 // --- Main Component: Booking Widget ---
 const BookingWidget = ({
   isHotel = true,
-  searchParamsString = '',
+  searchParamsString = '', // You can still keep this for initial load if needed, or rely entirely on useSearchParams
   t,
   property,
   onAvailabilityFound,
 }) => {
-  // --- 1. Parse URL Params ---
-  const initialValues = useMemo(() => {
-    const params = new URLSearchParams(searchParamsString);
-    const defaults = getDefaults();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams(); // Get current params
 
+  // --- 1. Parse URL Params ---
+  // We use useSearchParams() here to ensure we are always in sync with the URL
+  const initialValues = useMemo(() => {
+    const defaults = getDefaults();
+    
     // Check strict lowercase 'checkin' vs camelCase 'checkIn'
-    const urlCheckIn = params.get('checkin') || params.get('checkIn');
-    const urlCheckOut = params.get('checkout') || params.get('checkOut');
+    const urlCheckIn = searchParams.get('checkin') || searchParams.get('checkIn');
+    const urlCheckOut = searchParams.get('checkout') || searchParams.get('checkOut');
 
     return {
       dates: {
         checkIn: urlCheckIn || defaults.checkIn,
         checkOut: urlCheckOut || defaults.checkOut,
-        time: params.get('time') || defaults.time,
+        time: searchParams.get('time') || defaults.time,
       },
       guests: {
-        adults: parseInt(params.get('adults') || '2', 10),
-        children: parseInt(params.get('children') || '0', 10),
-        rooms: parseInt(params.get('rooms') || '1', 10),
-        people: parseInt(params.get('people') || '2', 10),
+        adults: parseInt(searchParams.get('adults') || '2', 10),
+        children: parseInt(searchParams.get('children') || '0', 10),
+        rooms: parseInt(searchParams.get('rooms') || '1', 10),
+        people: parseInt(searchParams.get('people') || '2', 10),
       },
     };
-  }, [searchParamsString]);
+  }, [searchParams]);
 
   // --- 2. Initialize Hooks ---
   const {
@@ -105,7 +110,6 @@ const BookingWidget = ({
   const [openGuests, setOpenGuests] = useState(false);
   const guestsRef = useRef(null);
 
-  // Initialize state from parsed URL values
   const [dates, setDates] = useState(initialValues.dates);
   const [guests, setGuests] = useState(initialValues.guests);
 
@@ -129,31 +133,68 @@ const BookingWidget = ({
     }
   }, [availableItems, onAvailabilityFound]);
 
-  // Auto-Search on Mount / Param Change
+  // Sync state if URL changes externally (e.g. back button)
+  useEffect(() => {
+    setDates(initialValues.dates);
+    setGuests(initialValues.guests);
+  }, [initialValues]);
+
+  // Auto-Search on Mount
   useEffect(() => {
     if (!property?.id) return;
-
     const filters = {
       checkIn: initialValues.dates.checkIn,
       guests: initialValues.guests,
     };
-
     if (isHotel) {
       filters.checkOut = initialValues.dates.checkOut;
     } else {
       filters.time = initialValues.dates.time;
     }
-
     checkAvailability(filters);
-  }, [
-    initialValues,
-    property?.id,
-    isHotel,
-    checkAvailability,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [property?.id]); // Only run on mount or property change, not on every URL change to prevent loops
 
   // --- 5. Handlers ---
+
+  // Helper to update URL
+  const updateUrlParams = useCallback(() => {
+    // 1. Create a new URLSearchParams object from the current params
+    const params = new URLSearchParams(searchParams.toString());
+
+    // 2. Set Date Params
+    params.set('checkin', dates.checkIn);
+    
+    if (isHotel) {
+      params.set('checkout', dates.checkOut);
+      params.delete('time'); // Clean up irrelevant params
+      params.delete('people');
+    } else {
+      params.set('time', dates.time);
+      params.delete('checkout');
+      params.delete('adults');
+      params.delete('children');
+      params.delete('rooms');
+    }
+
+    // 3. Set Guest Params
+    if (isHotel) {
+      params.set('adults', guests.adults.toString());
+      params.set('children', guests.children.toString());
+      params.set('rooms', guests.rooms.toString());
+    } else {
+      params.set('people', guests.people.toString());
+    }
+
+    // 4. Push to router (without scrolling to top)
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+  }, [dates, guests, isHotel, pathname, router, searchParams]);
+
   const handleSearch = useCallback(() => {
+    // 1. Update the URL first
+    updateUrlParams();
+
+    // 2. Trigger the API check
     const filters = {
       checkIn: dates.checkIn,
       guests: guests,
@@ -166,7 +207,7 @@ const BookingWidget = ({
     }
 
     checkAvailability(filters);
-  }, [dates, guests, isHotel, checkAvailability]);
+  }, [dates, guests, isHotel, checkAvailability, updateUrlParams]);
 
   const handleGuestChange = useCallback((type, operation) => {
     setGuests((prev) => {
