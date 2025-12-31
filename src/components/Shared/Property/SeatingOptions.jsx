@@ -8,13 +8,14 @@ import {
 
 const cn = (...classes) => classes.filter(Boolean).join(' ');
 
+// Removed hardcoded labels/descs. Only keeping visual config here.
 const LOCATION_CONFIG = {
-  'MH': { label: 'Main Hall', icon: Utensils, desc: 'Classic dining', color: 'text-orange-600', bg: 'bg-orange-50' },
-  'WN': { label: 'Window Side', icon: Sun, desc: 'Scenic views', color: 'text-sky-600', bg: 'bg-sky-50' },
-  'BT': { label: 'Private Booth', icon: Armchair, desc: 'Quiet & cozy', color: 'text-purple-600', bg: 'bg-purple-50' },
-  'PT': { label: 'Patio', icon: Wind, desc: 'Open-air', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  'RT': { label: 'Rooftop', icon: Star, desc: 'Skyline view', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-  'BR': { label: 'Bar', icon: Armchair, desc: 'High stools', color: 'text-rose-600', bg: 'bg-rose-50' }
+  'MH': { icon: Utensils, color: 'text-orange-600', bg: 'bg-orange-50' },
+  'WN': { icon: Sun,      color: 'text-sky-600',    bg: 'bg-sky-50' },
+  'BT': { icon: Armchair, color: 'text-purple-600', bg: 'bg-purple-50' },
+  'PT': { icon: Wind,     color: 'text-emerald-600',bg: 'bg-emerald-50' },
+  'RT': { icon: Star,     color: 'text-indigo-600', bg: 'bg-indigo-50' },
+  'BR': { icon: Armchair, color: 'text-rose-600',   bg: 'bg-rose-50' }
 };
 
 const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
@@ -57,20 +58,24 @@ const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
     <section className="w-full py-6">
       <div className="flex items-end justify-between mb-6">
         <div>
-          <h2 className="text-xl md:text-2xl font-bold text-slate-900">Seating Preference</h2>
-          <p className="text-sm text-slate-500 mt-1">Select an area to reserve</p>
+          {/* Translated Title */}
+          <h2 className="text-xl md:text-2xl font-bold text-slate-900">
+            {t('seating_preference') || "Seating Preference"}
+          </h2>
+          {/* Translated Subtitle */}
+          <p className="text-sm text-slate-500 mt-1">
+            {t('seating_sub') || "Select an area to reserve"}
+          </p>
         </div>
       </div>
       
-      {/* FIX: Added 'items-start'. 
-         This prevents the non-selected cards from stretching to match the height of the selected one.
-      */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
         {Object.entries(seatingGroups).map(([code, data]) => (
           <SeatingCard
             key={code}
             code={code}
             data={data}
+            t={t} // Pass translation function down
             isSelected={selectedType === code}
             onSelect={() => setSelectedType(selectedType === code ? null : code)}
             guestCount={guestCount}
@@ -86,43 +91,47 @@ const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
 };
 
 const SeatingCard = ({ 
-  code, data, isSelected, onSelect, 
+  code, data, t, isSelected, onSelect, 
   guestCount, setGuestCount, selectedTime, setSelectedTime, onBook 
 }) => {
-  const config = LOCATION_CONFIG[code] || LOCATION_CONFIG['MH'];
-  const Icon = config.icon;
+  // Default config if code is missing
+  const visualConfig = LOCATION_CONFIG[code] || LOCATION_CONFIG['MH'];
+  const Icon = visualConfig.icon;
   const maxCapacity = Math.max(...data.capacities);
   const isLimited = data.count < 3; 
+
+  // --- Dynamic Translations ---
+  // If the key doesn't exist, it falls back to the code (e.g. "Main Hall")
+  const label = t(`seating_${code}_label`) || code;
+  const desc = t(`seating_${code}_desc`) || "Standard seating";
 
   return (
     <div 
       className={cn(
-        // FIX: Added 'h-fit' so the card only takes up as much space as it needs
         "relative flex flex-col rounded-xl border transition-all duration-200 bg-white h-fit",
         isSelected 
           ? "border-blue-600 ring-1 ring-blue-600 shadow-lg z-10" 
           : "border-slate-200 hover:border-blue-300 hover:shadow-md"
       )}
     >
-      {/* --- TOP SECTION (Always Visible) --- */}
+      {/* --- TOP SECTION --- */}
       <button 
         onClick={onSelect}
         className="w-full text-left p-4 flex flex-col outline-none"
       >
         <div className="flex justify-between items-start w-full">
           <div className="flex items-center gap-3">
-            <div className={cn("p-2.5 rounded-lg shrink-0", config.bg, config.color)}>
+            <div className={cn("p-2.5 rounded-lg shrink-0", visualConfig.bg, visualConfig.color)}>
               <Icon className="w-5 h-5" />
             </div>
             <div>
               <h4 className={cn("font-bold text-base leading-tight", isSelected ? 'text-blue-700' : 'text-slate-900')}>
-                {config.label}
+                {label}
               </h4>
-              <p className="text-xs text-slate-500 mt-0.5">{config.desc}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
             </div>
           </div>
           
-          {/* Checkbox / Circle */}
           <div className={cn(
             "w-5 h-5 rounded-full flex items-center justify-center border transition-all shrink-0",
             isSelected ? "bg-blue-600 border-blue-600" : "bg-white border-slate-300"
@@ -135,25 +144,27 @@ const SeatingCard = ({
         <div className="mt-3 flex items-center gap-2">
           <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded">
             <Users className="w-3 h-3 text-slate-400" />
-            Max {maxCapacity}
+            {/* Using translation for Max Capacity with fallback */}
+            {t('max_capacity', { count: maxCapacity }) || `Max ${maxCapacity}`}
           </span>
           {isLimited && (
             <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2 py-1 rounded">
-              LIMITED
+              {t('limited_availability') || "LIMITED"}
             </span>
           )}
         </div>
       </button>
 
-      {/* --- EXPANDED SECTION (Booking Controls) --- */}
+      {/* --- EXPANDED SECTION --- */}
       {isSelected && (
         <div className="px-4 pb-4 animate-in slide-in-from-top-1 fade-in duration-200">
           <div className="h-px w-full bg-slate-100 mb-4" /> 
           
           <div className="grid grid-cols-2 gap-3 mb-4">
-            {/* Time Input */}
             <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Time</label>
+              <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+                {t('time') || "Time"}
+              </label>
               <div className="relative">
                 <input 
                   type="time" 
@@ -165,9 +176,10 @@ const SeatingCard = ({
               </div>
             </div>
 
-            {/* Guests Input */}
             <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Guests</label>
+              <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+                {t('guests') || "Guests"}
+              </label>
               <div className="relative">
                 <select 
                   value={guestCount}
@@ -187,7 +199,7 @@ const SeatingCard = ({
             onClick={(e) => { e.stopPropagation(); onBook(); }}
             className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow-sm flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
           >
-            Confirm Selection
+            {t('confirm_selection') || "Confirm Selection"}
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
