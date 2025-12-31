@@ -580,6 +580,10 @@
     "seating_RT_desc": "Premium skyline experience",
     "seating_BR_label": "Bar",
     "seating_BR_desc": "Casual high-top seating",
+
+    "person": "person",
+    "people": "people",
+    "available_times": "Available Times",
     "faq": {
       "title": "House Rules & FAQs",
       "check_in_out_q": "What are the check-in and check-out times?",

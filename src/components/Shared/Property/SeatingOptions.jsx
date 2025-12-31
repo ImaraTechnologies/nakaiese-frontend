@@ -3,12 +3,22 @@ import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Armchair, Sun, Wind, Star, Utensils, 
-  Check, Users, Clock, ArrowRight 
+  Users, ArrowRight, ChevronDown, Clock 
 } from 'lucide-react';
 
+// --- UTILS ---
 const cn = (...classes) => classes.filter(Boolean).join(' ');
 
-// Removed hardcoded labels/descs. Only keeping visual config here.
+// Time formatter to make "19:00" -> "7:00 PM"
+const formatTimeDisplay = (timeStr) => {
+  if (!timeStr) return '';
+  const [hour, minute] = timeStr.split(':');
+  const h = parseInt(hour, 10);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${minute} ${ampm}`;
+};
+
 const LOCATION_CONFIG = {
   'MH': { icon: Utensils, color: 'text-orange-600', bg: 'bg-orange-50' },
   'WN': { icon: Sun,      color: 'text-sky-600',    bg: 'bg-sky-50' },
@@ -21,33 +31,30 @@ const LOCATION_CONFIG = {
 const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState(null);
-  const [guestCount, setGuestCount] = useState(2);
-  const [selectedTime, setSelectedTime] = useState('19:00');
 
   const seatingGroups = useMemo(() => {
     if (!tables) return {};
     return tables.reduce((acc, table) => {
       const type = table.location_type;
-      if (!acc[type]) acc[type] = { count: 0, capacities: [], ids: [] };
+      if (!acc[type]) acc[type] = { count: 0, capacities: [], tables: [] };
       acc[type].count += 1;
       acc[type].capacities.push(table.capacity);
-      acc[type].ids.push(table.id);
+      acc[type].tables.push(table); 
       return acc;
     }, {});
   }, [tables]);
 
-  const handleBook = (groupData) => {
-    if (!groupData.ids.length) return;
+  const handleBook = (tableId, timeSlot, count) => {
     const params = new URLSearchParams(searchParamsString);
     const checkInDate = params.get('checkin') || new Date().toISOString().split('T')[0];
     
     const query = new URLSearchParams({
       p_id: propertyId,
-      item_id: groupData.ids[0],
+      item_id: tableId,
       p_t: 'table',
-      guests: guestCount,
+      guests: count,
       checkin: checkInDate,
-      time: selectedTime,
+      time: timeSlot,
     });
     router.push(`/booking/?${query.toString()}`);
   };
@@ -55,34 +62,27 @@ const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
   if (!tables || tables.length === 0) return null;
 
   return (
-    <section className="w-full py-6">
-      <div className="flex items-end justify-between mb-6">
-        <div>
-          {/* Translated Title */}
-          <h2 className="text-xl md:text-2xl font-bold text-slate-900">
-            {t('seating_preference') || "Seating Preference"}
-          </h2>
-          {/* Translated Subtitle */}
-          <p className="text-sm text-slate-500 mt-1">
-            {t('seating_sub') || "Select an area to reserve"}
-          </p>
-        </div>
+    <section className="w-full py-8 max-w-3xl">
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+          {t('seating_preference') || "Select Seating Area"}
+        </h2>
+        <p className="text-sm text-slate-500 mt-1">
+          {t('seating_sub') || "Choose where you'd like to sit"}
+        </p>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+      {/* STACKED LIST LAYOUT */}
+      <div className="flex flex-col space-y-3">
         {Object.entries(seatingGroups).map(([code, data]) => (
-          <SeatingCard
+          <SeatingRow
             key={code}
             code={code}
             data={data}
-            t={t} // Pass translation function down
+            t={t}
             isSelected={selectedType === code}
             onSelect={() => setSelectedType(selectedType === code ? null : code)}
-            guestCount={guestCount}
-            setGuestCount={setGuestCount}
-            selectedTime={selectedTime}
-            setSelectedTime={setSelectedTime}
-            onBook={() => handleBook(data)}
+            onBook={handleBook}
           />
         ))}
       </div>
@@ -90,120 +90,180 @@ const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
   );
 };
 
-const SeatingCard = ({ 
-  code, data, t, isSelected, onSelect, 
-  guestCount, setGuestCount, selectedTime, setSelectedTime, onBook 
+const SeatingRow = ({ 
+  code, data, t, isSelected, onSelect, onBook 
 }) => {
-  // Default config if code is missing
-  const visualConfig = LOCATION_CONFIG[code] || LOCATION_CONFIG['MH'];
-  const Icon = visualConfig.icon;
+  const config = LOCATION_CONFIG[code] || LOCATION_CONFIG['MH'];
+  const Icon = config.icon;
   const maxCapacity = Math.max(...data.capacities);
-  const isLimited = data.count < 3; 
+  
+  // Local State
+  const [guestCount, setGuestCount] = useState(2);
+  const [selectedSlot, setSelectedSlot] = useState(null);
 
-  // --- Dynamic Translations ---
-  // If the key doesn't exist, it falls back to the code (e.g. "Main Hall")
+  // Translations
   const label = t(`seating_${code}_label`) || code;
   const desc = t(`seating_${code}_desc`) || "Standard seating";
+
+  // Logic
+  const availableSlots = useMemo(() => {
+    const timeMap = new Map();
+    const validTables = data.tables.filter(tbl => tbl.capacity >= guestCount);
+    validTables.forEach(table => {
+      (table.slots || []).forEach(slot => {
+        if (slot.is_available && !timeMap.has(slot.start)) {
+          timeMap.set(slot.start, table.id);
+        }
+      });
+    });
+    return Array.from(timeMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  }, [data.tables, guestCount]);
 
   return (
     <div 
       className={cn(
-        "relative flex flex-col rounded-xl border transition-all duration-200 bg-white h-fit",
+        "group relative w-full border rounded-xl overflow-hidden transition-all duration-300",
         isSelected 
-          ? "border-blue-600 ring-1 ring-blue-600 shadow-lg z-10" 
-          : "border-slate-200 hover:border-blue-300 hover:shadow-md"
+          ? "border-blue-600 bg-white ring-1 ring-blue-600/20 shadow-lg" 
+          : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
       )}
     >
-      {/* --- TOP SECTION --- */}
+      {/* --- CLICKABLE HEADER ROW --- */}
       <button 
         onClick={onSelect}
-        className="w-full text-left p-4 flex flex-col outline-none"
+        className="w-full flex items-center justify-between p-4 text-left outline-none"
       >
-        <div className="flex justify-between items-start w-full">
-          <div className="flex items-center gap-3">
-            <div className={cn("p-2.5 rounded-lg shrink-0", visualConfig.bg, visualConfig.color)}>
-              <Icon className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className={cn("font-bold text-base leading-tight", isSelected ? 'text-blue-700' : 'text-slate-900')}>
-                {label}
-              </h4>
-              <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
-            </div>
-          </div>
-          
+        <div className="flex items-center gap-4">
+          {/* Icon Box */}
           <div className={cn(
-            "w-5 h-5 rounded-full flex items-center justify-center border transition-all shrink-0",
-            isSelected ? "bg-blue-600 border-blue-600" : "bg-white border-slate-300"
+            "w-12 h-12 flex items-center justify-center rounded-lg transition-colors",
+            isSelected ? config.bg + " " + config.color : "bg-slate-100 text-slate-500 group-hover:bg-slate-200"
           )}>
-            {isSelected && <Check className="w-3 h-3 text-white" />}
+            <Icon className="w-6 h-6" />
+          </div>
+
+          {/* Text Info */}
+          <div>
+            <h4 className={cn("font-bold text-base", isSelected ? 'text-blue-700' : 'text-slate-900')}>
+              {label}
+            </h4>
+            <div className="flex items-center gap-2 mt-0.5">
+               <span className="text-sm text-slate-500">{desc}</span>
+               <span className="text-slate-300">•</span>
+               <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
+                 <Users className="w-3 h-3" /> Max {maxCapacity}
+               </span>
+            </div>
           </div>
         </div>
 
-        {/* Tags Row */}
-        <div className="mt-3 flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded">
-            <Users className="w-3 h-3 text-slate-400" />
-            {/* Using translation for Max Capacity with fallback */}
-            {t('max_capacity', { count: maxCapacity }) || `Max ${maxCapacity}`}
-          </span>
-          {isLimited && (
-            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2 py-1 rounded">
-              {t('limited_availability') || "LIMITED"}
-            </span>
-          )}
+        {/* Chevron */}
+        <div className={cn(
+          "w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300",
+          isSelected ? "bg-blue-50 text-blue-600 rotate-180" : "text-slate-400"
+        )}>
+          <ChevronDown className="w-5 h-5" />
         </div>
       </button>
 
-      {/* --- EXPANDED SECTION --- */}
-      {isSelected && (
-        <div className="px-4 pb-4 animate-in slide-in-from-top-1 fade-in duration-200">
-          <div className="h-px w-full bg-slate-100 mb-4" /> 
-          
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
-                {t('time') || "Time"}
-              </label>
-              <div className="relative">
-                <input 
-                  type="time" 
-                  value={selectedTime}
-                  onChange={(e) => setSelectedTime(e.target.value)}
-                  className="w-full pl-7 pr-2 py-1.5 text-sm font-semibold text-slate-700 border border-slate-200 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                />
-                <Clock className="absolute left-2 top-2 w-3.5 h-3.5 text-slate-400" />
+      {/* --- EXPANDABLE CONTENT --- */}
+      <div 
+        className={cn(
+          "grid transition-[grid-template-rows] duration-300 ease-in-out",
+          isSelected ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="p-4 pt-0 border-t border-dashed border-slate-100 bg-slate-50/50">
+            
+            {/* Control Row: Guests & Slots */}
+            <div className="flex flex-col md:flex-row gap-6 mt-4">
+              
+              {/* 1. Guest Selector */}
+              <div className="w-full md:w-1/3">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">
+                  {t('guests') || "Party Size"}
+                </label>
+                <div className="relative">
+                  <select 
+                    value={guestCount}
+                    onChange={(e) => {
+                      setGuestCount(Number(e.target.value));
+                      setSelectedSlot(null);
+                    }}
+                    className="w-full appearance-none bg-white border border-slate-200 text-slate-900 text-sm font-medium rounded-lg p-3 pl-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow outline-none cursor-pointer"
+                  >
+                    {[...Array(maxCapacity)].map((_, i) => (
+                      <option key={i + 1} value={i + 1}>
+                        {i + 1} {i === 0 ? (t('person') || 'Person') : (t('people') || 'People')}
+                      </option>
+                    ))}
+                  </select>
+                  <Users className="absolute left-3 top-3 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <ChevronDown className="absolute right-3 top-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* 2. Time Slots */}
+              <div className="w-full md:w-2/3">
+                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">
+                   {t('available_times') || "Select Time"}
+                 </label>
+                 
+                 {availableSlots.length > 0 ? (
+                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                     {availableSlots.map(([timeStr, tableId]) => {
+                       const formattedTime = formatTimeDisplay(timeStr);
+                       const isActive = selectedSlot?.time === timeStr;
+                       
+                       return (
+                         <button
+                           key={timeStr}
+                           onClick={() => setSelectedSlot({ time: timeStr, tableId })}
+                           className={cn(
+                             "px-2 py-2 text-xs font-semibold rounded-lg border transition-all duration-200 text-center",
+                             isActive
+                               ? "bg-blue-600 text-white border-blue-600 shadow-md transform scale-[1.02]"
+                               : "bg-white text-slate-700 border-slate-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                           )}
+                         >
+                           {formattedTime}
+                         </button>
+                       );
+                     })}
+                   </div>
+                 ) : (
+                   <div className="p-4 w-full bg-white border border-slate-200 border-dashed rounded-lg text-center">
+                     <Clock className="w-5 h-5 text-slate-300 mx-auto mb-1" />
+                     <p className="text-xs text-slate-500">No tables for {guestCount} guests.</p>
+                   </div>
+                 )}
               </div>
             </div>
 
-            <div>
-              <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
-                {t('guests') || "Guests"}
-              </label>
-              <div className="relative">
-                <select 
-                  value={guestCount}
-                  onChange={(e) => setGuestCount(Number(e.target.value))}
-                  className="w-full pl-7 pr-4 py-1.5 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none appearance-none"
-                >
-                  {[...Array(maxCapacity)].map((_, i) => (
-                    <option key={i + 1} value={i + 1}>{i + 1}</option>
-                  ))}
-                </select>
-                <Users className="absolute left-2 top-2 w-3.5 h-3.5 text-slate-400" />
-              </div>
+            {/* Bottom: Book Button */}
+            <div className="mt-6 flex justify-end">
+              <button
+                disabled={!selectedSlot}
+                onClick={(e) => { 
+                  e.stopPropagation(); 
+                  if(selectedSlot) onBook(selectedSlot.tableId, selectedSlot.time, guestCount); 
+                }}
+                className={cn(
+                  "flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all duration-200 shadow-sm",
+                  selectedSlot 
+                    ? "bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:-translate-y-0.5" 
+                    : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                )}
+              >
+                {t('confirm_selection') || "Confirm Reservation"}
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
+
           </div>
-
-          <button
-            onClick={(e) => { e.stopPropagation(); onBook(); }}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg shadow-sm flex items-center justify-center gap-2 transition-transform active:scale-[0.98]"
-          >
-            {t('confirm_selection') || "Confirm Selection"}
-            <ArrowRight className="w-4 h-4" />
-          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 };
