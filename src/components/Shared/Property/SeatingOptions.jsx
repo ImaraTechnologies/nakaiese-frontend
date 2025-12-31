@@ -121,10 +121,13 @@ const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
                   <span className="inline-flex items-center text-[10px] font-semibold bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-200">
                      Up to {maxCapacity} Guests
                   </span>
-                  {data.basePrice > 0 ? (
-                    <span className="ml-auto text-xs font-bold text-slate-900">+${data.basePrice} Fee</span>
-                  ) : (
-                    <span className="ml-auto text-[10px] font-medium text-slate-400 uppercase tracking-wide">No Fee</span>
+                  <span className="text-xs font-medium bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                     {Math.max(...capacityRange)} guests
+                  </span>
+                  {data.hasFee && (
+                    <span className="text-xs font-bold bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">
+                      Fee Applies
+                    </span>
                   )}
                 </div>
               </button>
