@@ -615,8 +615,11 @@
     "reservation_time": "Heure",
     "nights": "nuits",
     "guests": "Voyageurs",
+    "people": "Personnes",
     "adults": "Adultes",
     "children": "Enfants",
+    "selected_room": "Chambre sélectionnée",
+    "selected_table": "Table sélectionnée",
     "price_breakdown": "Détails du prix",
     "table_reservation": "Réservation de table",
     "taxes_fees": "Taxes et frais",
@@ -626,5 +629,5 @@
     "pay_card_sub": "Paiement crypté et sécurisé",
     "pay_cash_label": "Payer sur place",
     "pay_cash_sub": "Payez à votre arrivée"
-  }
+}
 }

@@ -1,6 +1,6 @@
 import { useQuery, keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { useLocale } from 'next-intl'; // Import this
-import { getPropertiesList, getPropertyById } from "@/services/propertyServices";
+import { getPropertiesList, getPropertyById, getPropertyInfo } from "@/services/propertyServices";
 
 export const useProperties = (filters) => {
     const locale = useLocale();
@@ -38,5 +38,25 @@ export const useProperty = (id) => {
         enabled: !!id, // Only run if ID is present
         staleTime: 1000 * 60 * 5, // Cache for 5 minutes
         retry: 1, // Retry once on failure
+    });
+};
+
+export const usePropertyInfo = (searchParamsString) => {
+    const locale = useLocale();
+
+    return useQuery({
+        // Key includes params string so cache updates when URL changes
+        queryKey: ['propertyInfo', locale, searchParamsString],
+
+        // Fetcher passes the params
+        queryFn: () => getPropertyInfo(locale, searchParamsString),
+
+        // Only run if we have a valid query string containing an item_id
+        enabled: !!searchParamsString && searchParamsString.includes('item_id'),
+
+        // Config
+        staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+        retry: 1, // Retry once on failure
+        refetchOnWindowFocus: false,
     });
 };

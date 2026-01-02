@@ -15,7 +15,6 @@ import {
 import WishButton from '../WishButton/WishButton';
 
 const PropertyCard = ({ data = {} }) => {
-  console.log("Rendering PropertyCard for ID:", data.id);
   const router = useRouter();
   const locale = useLocale();
 

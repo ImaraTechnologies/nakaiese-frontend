@@ -599,7 +599,7 @@
       "payment_q": "How can I pay at the property?"
     }
   },
-  "Booking": {
+ "Booking": {
     "page_title": "Confirm Your Booking",
     "secure_msg": "Secure booking. Your data is protected.",
     "customer_details": "Your Details",
@@ -615,8 +615,11 @@
     "reservation_time": "Time",
     "nights": "nights",
     "guests": "Guests",
+    "people": "People",
     "adults": "Adults",
     "children": "Children",
+    "selected_room": "Selected Room",
+    "selected_table": "Selected Table",
     "price_breakdown": "Price Breakdown",
     "table_reservation": "Table Reservation",
     "taxes_fees": "Taxes & Fees",
@@ -626,5 +629,5 @@
     "pay_card_sub": "Secure encrypted payment",
     "pay_cash_label": "Pay at Property",
     "pay_cash_sub": "Pay when you arrive"
-  }
+}
 }

@@ -2,45 +2,64 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CreditCard, User, ShieldCheck } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { CreditCard, User, ShieldCheck, AlertCircle } from 'lucide-react';
 
-// Sub-components (defined below)
+// Hooks
+import { usePropertyInfo } from '@/hooks/useProperties';
+
+// Sub-components
 import BookingSummary from '@/components/Shared/Booking/BookingSummary';
 import CustomerForm from '@/components/Shared/Booking/CustomerForm';
 import PaymentMethodSelector from '@/components/Shared/Booking/PaymentMethodSelector';
+import { FullPageSpinner } from '@/components/ui/Spinner/Spinner';
 
 export default function BookingPage() {
   const t = useTranslations('Booking');
+  const searchParams = useSearchParams();
+  const searchParamsString = searchParams.toString();
 
-  // Mock Data - In a real app, retrieve this from your Context/Zustand store or URL params
-  const bookingData = {
-    property: {
-      title: "Savanna Camp Touba",
-      image: "/media/properties/banner_1.jpg",
-      rating: 4.8,
-      review_count: 443,
-      location: "Touba, Senegal",
-      type: "HL", // 'HL' for Hotel, 'RT' for Restaurant
-    },
-    details: {
-      checkIn: "2024-12-24",
-      checkOut: "2024-12-26",
-      guests: { adults: 2, children: 1 },
-      roomName: "Safari Suite", // Only for hotels
-      nights: 2,
-      pricePerNight: 250,
-      taxes: 45,
-    }
-  };
+  // 1. Fetch Real Booking Data
+  const { data, isLoading, error } = usePropertyInfo(searchParamsString);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Submit logic here...
-    setTimeout(() => setIsSubmitting(false), 2000);
+    
+    // Simulate API Call for booking creation
+    console.log("Submitting booking for:", data?.item?.id);
+    
+    setTimeout(() => {
+        setIsSubmitting(false);
+        // Handle success/redirect here
+    }, 2000);
   };
+
+  // --- Loading & Error States ---
+  if (isLoading) return <FullPageSpinner />;
+  
+  if (error || !data) {
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4">
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center max-w-md">
+                <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <AlertCircle className="w-6 h-6" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">Booking Details Not Found</h2>
+                {/* FIX: Escaped the apostrophe in "couldn't" */}
+                <p className="text-slate-500 mb-6">We couldn&apos;t retrieve the details for this reservation. The link might be expired or invalid.</p>
+                <button 
+                    onClick={() => window.history.back()}
+                    className="px-6 py-2 bg-slate-900 text-white rounded-full font-medium hover:bg-slate-800 transition"
+                >
+                    Go Back
+                </button>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-12">
@@ -84,17 +103,19 @@ export default function BookingPage() {
 
             {/* Submit Button (Mobile Order) */}
             <div className="lg:hidden">
-              <SubmitButton isSubmitting={isSubmitting} t={t} />
+              <SubmitButton isSubmitting={isSubmitting} t={t} total={data.summary.total_price} />
             </div>
           </div>
 
           {/* RIGHT COLUMN: Sticky Summary */}
           <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
-            <BookingSummary data={bookingData} t={t} />
+            
+            {/* We pass the API data directly to the summary component */}
+            <BookingSummary apiData={data} t={t} searchParams={searchParams} />
             
             {/* Submit Button (Desktop Order) */}
             <div className="hidden lg:block">
-              <SubmitButton isSubmitting={isSubmitting} t={t} />
+              <SubmitButton isSubmitting={isSubmitting} t={t} total={data.summary.total_price} />
             </div>
           </div>
 
@@ -104,8 +125,8 @@ export default function BookingPage() {
   );
 }
 
-// Simple Helper Button Component
-const SubmitButton = ({ isSubmitting, t }) => (
+// Helper Button Component
+const SubmitButton = ({ isSubmitting, t, total }) => (
   <button 
     type="submit"
     disabled={isSubmitting}
@@ -117,7 +138,8 @@ const SubmitButton = ({ isSubmitting, t }) => (
         <span>Processing...</span>
       </>
     ) : (
-      t('complete_booking') || "Complete Booking"
+      // Optional: Show total in button for clarity
+      `${t('complete_booking') || "Complete Booking"}`
     )}
   </button>
 );

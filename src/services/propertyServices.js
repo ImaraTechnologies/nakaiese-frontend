@@ -86,3 +86,18 @@ export async function checkAvailability(propertyId, {
         throw new Error(message);
     }
 }
+
+export const getPropertyInfo = async (locale, searchParamsString) => {
+    try {
+        // We pass the searchParamsString directly to the URL
+        const response = await localapi.get(`/properties/info/?${searchParamsString}`, {
+            headers: {
+                'Accept-Language': locale
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error("API Error fetching property info:", error);
+        throw error;
+    }
+};

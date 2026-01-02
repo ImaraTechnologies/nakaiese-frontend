@@ -55,7 +55,7 @@ const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
       ...Object.fromEntries(params.entries()), // keep existing
       p_id: propertyId,
       item_id: tableId,
-      p_t: 'table',
+      p_t: 'RT',
       guests: count,
       checkin: checkInDate,
       time: timeSlot,

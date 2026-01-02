@@ -1,115 +1,188 @@
 import React from 'react';
 import Image from 'next/image';
-import { Calendar, Users, Clock, MapPin, Star } from 'lucide-react';
+import { Calendar, Users, Clock, MapPin, Tag } from 'lucide-react';
 import { useFormatter } from 'next-intl';
 
-export default function BookingSummary({ data, t }) {
+export default function BookingSummary({ apiData, t, searchParams }) {
   const format = useFormatter();
-  const { property, details } = data;
-  const isHotel = property.type === 'HL';
+  
+  // 1. Destructure API Data safely
+  if (!apiData) return null;
+  const { property, item, summary } = apiData;
+  
+  // 2. Determine Type
+  const isHotel = property.property_type === 'HL';
 
-  // Calculations
-  const totalBase = details.pricePerNight * (isHotel ? details.nights : 1);
-  const total = totalBase + details.taxes;
+  // 3. Robust Image URL Logic
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return '/images/placeholder-property.jpg'; 
+
+    // If it's already a full URL (S3, Cloudinary), use it
+    if (imagePath.startsWith('http')) {
+        return imagePath;
+    }
+
+    // If it's a relative path from Django, prepend the Backend URL
+    const baseUrl = process.env.NEXT_PUBLIC_MEDIA_BASE_URL || 'http://127.0.0.1:8000';
+    return `${baseUrl}${imagePath}`;
+  };
+
+  const imageUrl = getImageUrl(property.image);
+
+  // 4. Parse Dates from URL or API Summary
+  const checkInDate = searchParams.get('checkin') ? new Date(searchParams.get('checkin')) : null;
+  const checkOutDate = searchParams.get('checkout') ? new Date(searchParams.get('checkout')) : null;
+  const timeSlot = searchParams.get('time') || summary.time;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden sticky top-24">
       
-      {/* Property Snippet */}
-      <div className="relative h-32 w-full">
+      {/* --- Property Header Image --- */}
+      <div className="relative h-36 w-full bg-slate-100">
         <Image 
-          src={property.image} 
+          src={imageUrl} 
           alt={property.title}
           fill
           className="object-cover"
+          sizes="(max-width: 768px) 100vw, 33vw"
+          // FIX: Disable server-side optimization for localhost images
+          unoptimized={true} 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
-          <div className="text-white">
-            <h3 className="font-bold text-lg leading-tight">{property.title}</h3>
-            <div className="flex items-center gap-1 text-xs text-white/90 mt-1">
-              <MapPin className="w-3 h-3" />
-              <span className="truncate">{property.location}</span>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-5">
+          <div className="text-white w-full">
+            <h3 className="font-bold text-lg leading-tight mb-1">{property.title}</h3>
+            <div className="flex items-center gap-1.5 text-xs text-white/90">
+              <MapPin className="w-3.5 h-3.5 text-blue-400" />
+              <span className="truncate max-w-[250px]">
+                {property.city_name}, {property.country_name}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="p-5 space-y-6">
+      <div className="p-6 space-y-6">
         
-        {/* Dates & Time Logic */}
+        {/* --- Selected Item Info --- */}
+        <div className="pb-4 border-b border-slate-100">
+            <div className="flex items-start gap-3">
+                <div className={`p-2 rounded-lg shrink-0 ${isHotel ? 'bg-indigo-50 text-indigo-600' : 'bg-orange-50 text-orange-600'}`}>
+                    {isHotel ? <Tag className="w-5 h-5" /> : <Tag className="w-5 h-5" />}
+                </div>
+                <div>
+                    <p className="text-xs font-bold uppercase text-slate-400 tracking-wider mb-0.5">
+                        {isHotel ? (t('selected_room') || "Selected Room") : (t('selected_table') || "Selected Table")}
+                    </p>
+                    <h4 className="text-base font-bold text-slate-900 leading-tight">
+                        {isHotel 
+                            ? item.title 
+                            : `${item.location_label || 'Table'} (${item.table_number})`
+                        }
+                    </h4>
+                    {isHotel && item.bed_type && (
+                        <p className="text-xs text-slate-500 mt-1">
+                            {item.capacity_adults} Adults • {item.bed_type} Bed
+                        </p>
+                    )}
+                </div>
+            </div>
+        </div>
+
+        {/* --- Date & Guests --- */}
         <div className="space-y-4">
-          <div className="flex gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              {isHotel ? <Calendar className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+          
+          <div className="flex gap-4">
+            <div className="w-8 h-8 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center shrink-0 border border-slate-100">
+              {isHotel ? <Calendar className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
             </div>
             <div>
-              <p className="text-xs font-bold uppercase text-slate-400 tracking-wide">
+              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wide">
                 {isHotel ? (t('dates') || "Dates") : (t('reservation_time') || "Time")}
               </p>
-              <p className="font-medium text-slate-900 text-sm">
+              <p className="font-medium text-slate-900 text-sm mt-0.5">
                 {isHotel ? (
                   <>
-                    {format.dateTime(new Date(details.checkIn), { month: 'short', day: 'numeric' })} 
-                    {' - '} 
-                    {format.dateTime(new Date(details.checkOut), { month: 'short', day: 'numeric', year: 'numeric' })}
-                    <span className="text-slate-500 font-normal ml-1">({details.nights} {t('nights') || "nights"})</span>
+                    {checkInDate ? format.dateTime(checkInDate, { month: 'short', day: 'numeric' }) : '--'} 
+                    {' → '} 
+                    {checkOutDate ? format.dateTime(checkOutDate, { month: 'short', day: 'numeric', year: 'numeric' }) : '--'}
+                    <span className="block text-xs text-slate-500 font-normal mt-0.5">
+                        {summary.nights} {t('nights') || "Night(s)"}
+                    </span>
                   </>
                 ) : (
                   <>
-                    {format.dateTime(new Date(details.checkIn), { weekday: 'short', month: 'short', day: 'numeric' })}
-                    {' at '}
-                    <span className="text-blue-600 font-bold">19:30</span>
+                    {checkInDate ? format.dateTime(checkInDate, { weekday: 'short', month: 'long', day: 'numeric' }) : 'Today'}
+                    {' @ '}
+                    <span className="text-blue-600 font-bold">{timeSlot}</span>
                   </>
                 )}
               </p>
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <div className="w-10 h-10 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
-              <Users className="w-5 h-5" />
+          <div className="flex gap-4">
+            <div className="w-8 h-8 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center shrink-0 border border-slate-100">
+              <Users className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase text-slate-400 tracking-wide">{t('guests') || "Guests"}</p>
-              <p className="font-medium text-slate-900 text-sm">
-                {details.guests.adults} {t('adults') || "Adults"}
-                {details.guests.children > 0 && `, ${details.guests.children} ${t('children') || "Children"}`}
+              <p className="text-[10px] font-bold uppercase text-slate-400 tracking-wide">
+                {t('guests') || "Guests"}
+              </p>
+              <p className="font-medium text-slate-900 text-sm mt-0.5">
+                {summary.guests || summary.quantity} {t('people') || "People"}
+                {isHotel && ` (${summary.quantity} Room${summary.quantity > 1 ? 's' : ''})`}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Breakdown */}
+        {/* --- Price Breakdown --- */}
         <div className="pt-6 border-t border-dashed border-slate-200 space-y-3">
-          <h4 className="font-bold text-slate-900 text-sm">{t('price_breakdown') || "Price Breakdown"}</h4>
+          <h4 className="font-bold text-slate-900 text-sm mb-3">{t('price_breakdown') || "Price Breakdown"}</h4>
           
-          <div className="flex justify-between text-sm text-slate-600">
-            <span>
-              {isHotel ? details.roomName : (t('table_reservation') || "Table Reservation")} 
-              {isHotel && <span className="text-xs text-slate-400 block">x {details.nights} {t('nights') || "nights"}</span>}
-            </span>
-            <span className="font-medium">{format.number(totalBase, { style: 'currency', currency: 'USD' })}</span>
-          </div>
+          {isHotel ? (
+             <div className="flex justify-between text-sm text-slate-600">
+                <div className="flex flex-col">
+                    <span className="font-medium text-slate-700">{summary.breakdown?.title || item.title}</span>
+                    <span className="text-xs text-slate-400">
+                        {summary.breakdown?.quantity || summary.quantity} room(s) x {summary.breakdown?.nights || summary.nights} night(s)
+                    </span>
+                </div>
+                <span className="font-medium">
+                    {format.number(parseFloat(summary.breakdown?.total || summary.total_price), { style: 'currency', currency: 'USD' })}
+                </span>
+             </div>
+          ) : (
+             summary.breakdown && Array.isArray(summary.breakdown) && summary.breakdown.map((line, idx) => (
+                <div key={idx} className="flex justify-between text-sm text-slate-600">
+                   <span>{line}</span>
+                   {idx === 0 && (
+                        <span className="font-medium">
+                            {format.number(summary.total_price, { style: 'currency', currency: 'USD' })}
+                        </span>
+                   )}
+                </div>
+             ))
+          )}
           
-          <div className="flex justify-between text-sm text-slate-600">
+          <div className="flex justify-between text-sm text-slate-500 pt-2">
             <span>{t('taxes_fees') || "Taxes & Fees"}</span>
-            <span className="font-medium">{format.number(details.taxes, { style: 'currency', currency: 'USD' })}</span>
+            <span className="font-medium">{format.number(0, { style: 'currency', currency: 'USD' })}</span>
           </div>
 
-          <div className="flex justify-between items-end pt-4 border-t border-slate-200">
+          <div className="flex justify-between items-end pt-4 border-t border-slate-200 mt-2">
             <span className="font-bold text-slate-900 text-lg">{t('total') || "Total"}</span>
-            <span className="font-extrabold text-slate-900 text-2xl text-blue-600">
-              {format.number(total, { style: 'currency', currency: 'USD' })}
+            <span className="font-extrabold text-slate-900 text-2xl tracking-tight text-blue-600">
+              {format.number(summary.total_price, { style: 'currency', currency: 'USD' })}
             </span>
           </div>
         </div>
 
       </div>
       
-      {/* Bottom Guarantee */}
-      <div className="bg-slate-50 p-3 text-center border-t border-slate-200">
-        <p className="text-xs text-slate-500">
-          {t('free_cancel_msg') || "Free cancellation until 24 hours before check-in"}
+      <div className="bg-slate-50 p-4 text-center border-t border-slate-200">
+        <p className="text-xs text-slate-500 font-medium">
+          {t('free_cancel_msg') || "Free cancellation until 24 hours before."}
         </p>
       </div>
     </div>

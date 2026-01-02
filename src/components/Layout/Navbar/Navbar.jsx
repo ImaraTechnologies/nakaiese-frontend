@@ -4,6 +4,9 @@ import React, { useState, useRef, useEffect, useTransition } from 'react';
 import Image from 'next/image';
 import { usePathname, useRouter, Link } from '@/i18n/routing';
 import { useTranslations, useLocale } from 'next-intl';
+// --- FIX START: Import useSearchParams ---
+import { useSearchParams } from 'next/navigation';
+// --- FIX END ---
 
 // Icons
 import { FaGlobe, FaBell, FaUser, FaBars, FaTimes } from 'react-icons/fa';
@@ -12,7 +15,7 @@ import { Heart } from 'lucide-react';
 // Components
 import Container from '@/components/Shared/Container/Container';
 
-// ✅ Context
+// Context
 import { useAuth } from '@/context/AuthContext';
 
 const Navbar = () => {
@@ -20,17 +23,29 @@ const Navbar = () => {
   const currentLocale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  // --- FIX START: Get current params ---
+  const searchParams = useSearchParams();
+  // --- FIX END ---
+  
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // ✅ 1. Get User, Logout, AND isLoading from Context
+  // 1. Get User, Logout, AND isLoading from Context
   const { user, logout, isLoading } = useAuth();
 
   // Language Switch Logic
   const [isPending, startTransition] = useTransition();
+
   const handleLanguageSwitch = () => {
     const nextLocale = currentLocale === 'en' ? 'fr' : 'en';
+    
     startTransition(() => {
-      router.replace(pathname, { locale: nextLocale });
+      // --- FIX START: Preserve Query Params ---
+      const currentQuery = searchParams.toString();
+      const queryString = currentQuery ? `?${currentQuery}` : '';
+      
+      // Append query string to the pathname
+      router.replace(`${pathname}${queryString}`, { locale: nextLocale });
+      // --- FIX END ---
     });
   };
 
@@ -42,20 +57,16 @@ const Navbar = () => {
 
   const toggleMobileMenu = () => setMobileMenuOpen(prev => !prev);
 
-  // ✅ 2. Define Auth Content Logic (The Anti-Flicker Logic)
-  // This determines what to show: Skeleton, Profile, or Login Button
+  // 2. Define Auth Content Logic (Anti-Flicker)
   const renderAuthSection = () => {
-    // A. If user exists, show Profile (Even if loading, we prefer showing the user)
     if (user) {
       return <UserDropdown t={t} logout={logout} user={user} />;
     }
 
-    // B. If NO user, but we are Loading (refreshing or verifying token), show Skeleton
     if (isLoading) {
       return <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse border border-gray-300" />;
     }
 
-    // C. If NO user and NOT loading, show Login Button
     return (
       <button
         onClick={() => router.push('/auth/login')}
@@ -106,7 +117,6 @@ const Navbar = () => {
               onClick={() => router.push('/wishlist')}
             />
 
-            {/* ✅ 3. Render the dynamic auth content */}
             {renderAuthSection()}
           </div>
 
@@ -143,8 +153,6 @@ const Navbar = () => {
               <div className="flex items-center justify-around mt-3 px-2 py-2 border-t border-gray-200">
                 <IconButton icon={<FaBell />} />
 
-                {/* ✅ 4. Render Auth Section in Mobile too */}
-                {/* We wrap it in a div to ensure alignment */}
                 <div onClick={() => setMobileMenuOpen(false)}>
                    {renderAuthSection()}
                 </div>
@@ -189,11 +197,7 @@ const UserDropdown = ({ t, logout, user }) => {
   const handleLogout = async () => {
     setIsOpen(false);
     await logout(); 
-    // No need to redirect manually, the mutation onSuccess handles it
   };
-
-  // Optional: Display username if available in user object
-  // const displayName = user?.username || user?.email || t('profile');
 
   const menuItems = [
     { label: t('profile'), onClick: () => { setIsOpen(false); router.push('/profile'); } },
@@ -208,7 +212,6 @@ const UserDropdown = ({ t, logout, user }) => {
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
           
-          {/* Optional: Show User Email/Name at top of dropdown */}
           {user?.username && (
             <div className="px-4 py-2 border-b border-gray-100 text-xs text-gray-500 font-semibold uppercase">
               {user.username}

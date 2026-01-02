@@ -51,7 +51,7 @@ const RoomCard = ({ room, propertyId, stayDetails, format, router }) => {
     const queryParams = new URLSearchParams({
       p_id: propertyId,
       item_id: room.id,
-      p_t: 'room',
+      p_t: 'HL',
       quantity: selectedQuantity.toString(),
       for_n: stayDetails.nights.toString(),
       checkin: stayDetails.checkIn,
