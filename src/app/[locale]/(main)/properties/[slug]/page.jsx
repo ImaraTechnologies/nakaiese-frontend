@@ -24,9 +24,6 @@ export default function PropertyDetailsPage() {
 
   const [selectedSeating, setSelectedSeating] = useState(null);
 
-
-
-
   // 1. Fetch Property Data
   const { data: property, isLoading, error } = useProperty(params.slug);
 

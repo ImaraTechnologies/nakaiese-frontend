@@ -48,7 +48,7 @@ const generateTimeSlots = (startStr, endStr, isOpen24Hours) => {
     slots.push(formatted);
 
     // Add 30 minutes
-    currentM += 30;
+    currentM += 90;
     if (currentM >= 60) {
       currentH++;
       currentM = 0;

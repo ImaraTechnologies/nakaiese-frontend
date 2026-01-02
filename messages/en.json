@@ -599,7 +599,7 @@
       "payment_q": "How can I pay at the property?"
     }
   },
- "Booking": {
+  "Booking": {
     "page_title": "Confirm Your Booking",
     "secure_msg": "Secure booking. Your data is protected.",
     "customer_details": "Your Details",
@@ -618,6 +618,7 @@
     "people": "People",
     "adults": "Adults",
     "children": "Children",
+    "country": "Country/Region",
     "selected_room": "Selected Room",
     "selected_table": "Selected Table",
     "price_breakdown": "Price Breakdown",
@@ -632,5 +633,5 @@
     "pay_mobile_label": "Mobile Money",
     "pay_mobile_sub": "Wave, Orange Money, Free Money",
     "no_payment_methods": "No payment methods configured for this property."
-}
+  }
 }

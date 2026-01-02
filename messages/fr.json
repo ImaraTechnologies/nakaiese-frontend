@@ -599,7 +599,7 @@
       "payment_q": "Comment puis-je payer sur place ?"
     }
   },
-"Booking": {
+  "Booking": {
     "page_title": "Confirmez votre réservation",
     "secure_msg": "Réservation sécurisée. Vos données sont protégées.",
     "customer_details": "Vos coordonnées",
@@ -618,6 +618,7 @@
     "people": "Personnes",
     "adults": "Adultes",
     "children": "Enfants",
+    "country": "Pays/Région",
     "selected_room": "Chambre sélectionnée",
     "selected_table": "Table sélectionnée",
     "price_breakdown": "Détails du prix",
@@ -632,5 +633,5 @@
     "pay_mobile_label": "Mobile Money",
     "pay_mobile_sub": "Wave, Orange Money, Free Money",
     "no_payment_methods": "Aucun moyen de paiement configuré pour cet établissement."
-}
+  }
 }

@@ -1,27 +1,171 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const InputGroup = ({ label, type = "text", placeholder, required = true }) => (
+// --- DATA: List of African Countries with Dial Codes ---
+const AFRICAN_COUNTRIES = [
+  { code: 'DZ', name: 'Algeria', dial: '+213' },
+  { code: 'AO', name: 'Angola', dial: '+244' },
+  { code: 'BJ', name: 'Benin', dial: '+229' },
+  { code: 'BW', name: 'Botswana', dial: '+267' },
+  { code: 'BF', name: 'Burkina Faso', dial: '+226' },
+  { code: 'BI', name: 'Burundi', dial: '+257' },
+  { code: 'CV', name: 'Cabo Verde', dial: '+238' },
+  { code: 'CM', name: 'Cameroon', dial: '+237' },
+  { code: 'CF', name: 'Central African Republic', dial: '+236' },
+  { code: 'TD', name: 'Chad', dial: '+235' },
+  { code: 'KM', name: 'Comoros', dial: '+269' },
+  { code: 'CD', name: 'DR Congo', dial: '+243' },
+  { code: 'CG', name: 'Republic of the Congo', dial: '+242' },
+  { code: 'CI', name: 'Côte d\'Ivoire', dial: '+225' },
+  { code: 'DJ', name: 'Djibouti', dial: '+253' },
+  { code: 'EG', name: 'Egypt', dial: '+20' },
+  { code: 'GQ', name: 'Equatorial Guinea', dial: '+240' },
+  { code: 'ER', name: 'Eritrea', dial: '+291' },
+  { code: 'SZ', name: 'Eswatini', dial: '+268' },
+  { code: 'ET', name: 'Ethiopia', dial: '+251' },
+  { code: 'GA', name: 'Gabon', dial: '+241' },
+  { code: 'GM', name: 'Gambia', dial: '+220' },
+  { code: 'GH', name: 'Ghana', dial: '+233' },
+  { code: 'GN', name: 'Guinea', dial: '+224' },
+  { code: 'GW', name: 'Guinea-Bissau', dial: '+245' },
+  { code: 'KE', name: 'Kenya', dial: '+254' },
+  { code: 'LS', name: 'Lesotho', dial: '+266' },
+  { code: 'LR', name: 'Liberia', dial: '+231' },
+  { code: 'LY', name: 'Libya', dial: '+218' },
+  { code: 'MG', name: 'Madagascar', dial: '+261' },
+  { code: 'MW', name: 'Malawi', dial: '+265' },
+  { code: 'ML', name: 'Mali', dial: '+223' },
+  { code: 'MR', name: 'Mauritania', dial: '+222' },
+  { code: 'MU', name: 'Mauritius', dial: '+230' },
+  { code: 'MA', name: 'Morocco', dial: '+212' },
+  { code: 'MZ', name: 'Mozambique', dial: '+258' },
+  { code: 'NA', name: 'Namibia', dial: '+264' },
+  { code: 'NE', name: 'Niger', dial: '+227' },
+  { code: 'NG', name: 'Nigeria', dial: '+234' },
+  { code: 'RW', name: 'Rwanda', dial: '+250' },
+  { code: 'ST', name: 'Sao Tome and Principe', dial: '+239' },
+  { code: 'SN', name: 'Senegal', dial: '+221' },
+  { code: 'SC', name: 'Seychelles', dial: '+248' },
+  { code: 'SL', name: 'Sierra Leone', dial: '+232' },
+  { code: 'SO', name: 'Somalia', dial: '+252' },
+  { code: 'ZA', name: 'South Africa', dial: '+27' },
+  { code: 'SS', name: 'South Sudan', dial: '+211' },
+  { code: 'SD', name: 'Sudan', dial: '+249' },
+  { code: 'TZ', name: 'Tanzania', dial: '+255' },
+  { code: 'TG', name: 'Togo', dial: '+228' },
+  { code: 'TN', name: 'Tunisia', dial: '+216' },
+  { code: 'UG', name: 'Uganda', dial: '+256' },
+  { code: 'ZM', name: 'Zambia', dial: '+260' },
+  { code: 'ZW', name: 'Zimbabwe', dial: '+263' },
+];
+
+const InputGroup = ({ label, type = "text", placeholder, required = true, name, onChange }) => (
   <div className="space-y-1.5">
     <label className="text-sm font-semibold text-slate-700">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <input 
       type={type} 
+      name={name}
       required={required}
+      onChange={onChange}
       placeholder={placeholder}
       className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900 bg-white"
     />
   </div>
 );
 
+// --- NEW COMPONENT: Country Select ---
+const CountrySelect = ({ label, required = true, value, onChange }) => (
+  <div className="space-y-1.5">
+    <label className="text-sm font-semibold text-slate-700">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <div className="relative">
+      <select 
+        value={value}
+        onChange={onChange}
+        required={required}
+        className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 bg-white appearance-none cursor-pointer"
+      >
+        <option value="" disabled>Select Country</option>
+        {AFRICAN_COUNTRIES.map((country) => (
+          <option key={country.code} value={country.name}>
+            {country.name}
+          </option>
+        ))}
+        {/* Fallback option if needed */}
+        <option value="Other">Other / International</option>
+      </select>
+      {/* Custom Arrow */}
+      <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+      </div>
+    </div>
+  </div>
+);
+
+// --- NEW COMPONENT: Phone with Country Code ---
+const PhoneInput = ({ label, required = false }) => {
+  const [code, setCode] = useState('+221'); // Default to Senegal or similar
+
+  return (
+    <div className="space-y-1.5">
+      <label className="text-sm font-semibold text-slate-700">
+        {label} {required && <span className="text-red-500">*</span>} 
+        {!required && <span className="text-slate-400 font-normal text-xs ml-1">(Optional)</span>}
+      </label>
+      <div className="flex rounded-lg border border-slate-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all bg-white overflow-hidden">
+        {/* Country Code Selector */}
+        <div className="relative border-r border-slate-200 bg-slate-50">
+          <select 
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            className="h-full py-3 pl-3 pr-8 bg-transparent text-slate-700 text-sm font-medium outline-none appearance-none cursor-pointer w-[110px]"
+          >
+            {AFRICAN_COUNTRIES.map((c) => (
+              <option key={c.code} value={c.dial}>
+                {c.code} {c.dial}
+              </option>
+            ))}
+             <option value="+1">US +1</option>
+             <option value="+44">UK +44</option>
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-400">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+          </div>
+        </div>
+        
+        {/* Phone Number Input */}
+        <input 
+          type="tel" 
+          placeholder="77 123 45 67"
+          required={required}
+          className="w-full px-4 py-3 outline-none text-slate-900 placeholder:text-slate-400"
+        />
+      </div>
+    </div>
+  );
+};
+
 export default function CustomerForm({ t }) {
+  const [formData, setFormData] = useState({ country: 'Senegal' });
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <InputGroup label={t('first_name') || "First Name"} placeholder="John" />
-      <InputGroup label={t('last_name') || "Last Name"} placeholder="Doe" />
+      <InputGroup label={t('first_name') || "First Name"} placeholder="John" name="first_name" />
+      <InputGroup label={t('last_name') || "Last Name"} placeholder="Doe" name="last_name" />
       
-      <InputGroup label={t('email') || "Email Address"} type="email" placeholder="john@example.com" />
-      <InputGroup label={t('phone') || "Phone Number"} type="tel" placeholder="+1 234 567 890" />
+      <InputGroup label={t('email') || "Email Address"} type="email" placeholder="john@example.com" name="email" />
+      
+      {/* Updated Country Select */}
+      <CountrySelect 
+        label={t('country') || "Country/Region"} 
+        value={formData.country}
+        onChange={(e) => setFormData({...formData, country: e.target.value})}
+      />
+
+      {/* Updated Phone Input (Optional) */}
+      <PhoneInput label={t('phone') || "Phone Number"} required={false} />
       
       <div className="md:col-span-2 space-y-1.5">
         <label className="text-sm font-semibold text-slate-700">
@@ -29,6 +173,7 @@ export default function CustomerForm({ t }) {
         </label>
         <textarea 
           rows={3}
+          name="special_requests"
           className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900 bg-white resize-none"
           placeholder={t('requests_placeholder') || "Late check-in, dietary restrictions, etc."}
         />
