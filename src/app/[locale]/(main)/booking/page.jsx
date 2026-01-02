@@ -98,7 +98,7 @@ export default function BookingPage() {
                 </div>
                 <h2 className="text-xl font-bold text-slate-900">{t('payment_method') || "Payment"}</h2>
               </div>
-              <PaymentMethodSelector t={t} />
+              <PaymentMethodSelector t={t} data={data.property} />
             </section>
 
             {/* Submit Button (Mobile Order) */}

@@ -599,7 +599,7 @@
       "payment_q": "Comment puis-je payer sur place ?"
     }
   },
-  "Booking": {
+"Booking": {
     "page_title": "Confirmez votre réservation",
     "secure_msg": "Réservation sécurisée. Vos données sont protégées.",
     "customer_details": "Vos coordonnées",
@@ -628,6 +628,9 @@
     "pay_card_label": "Payer par carte",
     "pay_card_sub": "Paiement crypté et sécurisé",
     "pay_cash_label": "Payer sur place",
-    "pay_cash_sub": "Payez à votre arrivée"
+    "pay_cash_sub": "Payez à votre arrivée",
+    "pay_mobile_label": "Mobile Money",
+    "pay_mobile_sub": "Wave, Orange Money, Free Money",
+    "no_payment_methods": "Aucun moyen de paiement configuré pour cet établissement."
 }
 }

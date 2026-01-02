@@ -628,6 +628,9 @@
     "pay_card_label": "Pay with Card",
     "pay_card_sub": "Secure encrypted payment",
     "pay_cash_label": "Pay at Property",
-    "pay_cash_sub": "Pay when you arrive"
+    "pay_cash_sub": "Pay when you arrive",
+    "pay_mobile_label": "Mobile Money",
+    "pay_mobile_sub": "Wave, Orange Money, Free Money",
+    "no_payment_methods": "No payment methods configured for this property."
 }
 }

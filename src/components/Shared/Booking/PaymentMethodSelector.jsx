@@ -1,20 +1,61 @@
-import React, { useState } from 'react';
-import { CreditCard, Banknote, Smartphone } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { CreditCard, Banknote, Smartphone, AlertCircle } from 'lucide-react';
 
-export default function PaymentMethodSelector({ t }) {
-  const [selected, setSelected] = useState('card');
+export default function PaymentMethodSelector({ t, data }) {
+  // 1. Define all possible methods
+  const allMethods = useMemo(() => [
+    { 
+      id: 'card', 
+      flag: 'card_payment_accepted', 
+      label: t('pay_card_label') || "Pay with Card", 
+      icon: CreditCard, 
+      sub: t('pay_card_sub') || "Secure encrypted payment" 
+    },
+    { 
+      id: 'cash', 
+      flag: 'cash_payment_accepted', 
+      label: t('pay_cash_label') || "Pay at Property", 
+      icon: Banknote, 
+      sub: t('pay_cash_sub') || "Pay when you arrive" 
+    },
+    { 
+      id: 'mobile', 
+      flag: 'mobile_payment_accepted', 
+      label: t('pay_mobile_label') || "Mobile Money", 
+      icon: Smartphone, 
+      sub: t('pay_mobile_sub') || "Wave, Orange Money" 
+    },
+  ], [t]);
 
-  const methods = [
-    { id: 'card', label: "Pay with Card", icon: CreditCard, sub: "Secure encrypted payment" },
-    { id: 'cash', label: "Pay at Property", icon: Banknote, sub: "Pay when you arrive" },
-    // { id: 'mobile', label: "Mobile Money", icon: Smartphone, sub: "Wave, Orange Money" },
-  ];
+  // 2. Filter based on Property Data
+  const availableMethods = useMemo(() => {
+    if (!data) return [];
+    return allMethods.filter(method => data[method.flag] === true);
+  }, [data, allMethods]);
+
+  // 3. User Selection State (Initially null)
+  const [userSelection, setUserSelection] = useState(null);
+
+  // 4. DERIVED STATE: Calculate active selection during render
+  // If user hasn't selected anything, fallback to the first available method.
+  // This replaces the need for useEffect to "set" a default.
+  const activeMethodId = userSelection || (availableMethods.length > 0 ? availableMethods[0].id : '');
+
+  // Edge Case: No payment methods defined
+  if (availableMethods.length === 0) {
+    return (
+      <div className="p-4 bg-amber-50 text-amber-800 rounded-xl flex items-center gap-3 text-sm">
+        <AlertCircle className="w-5 h-5 shrink-0" />
+        <span>{t('no_payment_methods') || "No payment methods available for this property."}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
-      {methods.map((method) => {
+      {availableMethods.map((method) => {
         const Icon = method.icon;
-        const isActive = selected === method.id;
+        const isActive = activeMethodId === method.id;
         
         return (
           <label 
@@ -30,7 +71,7 @@ export default function PaymentMethodSelector({ t }) {
               name="payment_method" 
               value={method.id} 
               checked={isActive}
-              onChange={() => setSelected(method.id)}
+              onChange={() => setUserSelection(method.id)}
               className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500"
             />
             
