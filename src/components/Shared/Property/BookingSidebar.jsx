@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types';
 import { Calendar, Clock, Users, ChevronDown, Minus, Plus, Loader2, AlertCircle } from 'lucide-react';
 import { useAvailability } from '@/hooks/useAvailability';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'; // Added hooks
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 // --- Utility: Get Default Dates ---
 const getDefaults = () => {
@@ -14,8 +14,48 @@ const getDefaults = () => {
   return {
     checkIn: today.toISOString().split('T')[0],
     checkOut: tomorrow.toISOString().split('T')[0],
-    time: '19:00',
+    time: '', // Leave empty to be filled by dynamic logic
   };
+};
+
+// --- Utility: Generate Time Slots ---
+const generateTimeSlots = (startStr, endStr, isOpen24Hours) => {
+  const slots = [];
+  
+  // 1. Handle 24 Hours
+  if (isOpen24Hours) {
+    for (let h = 0; h < 24; h++) {
+      slots.push(`${h.toString().padStart(2, '0')}:00`);
+      slots.push(`${h.toString().padStart(2, '0')}:30`);
+    }
+    return slots;
+  }
+
+  // 2. Handle specific hours
+  if (!startStr || !endStr) return [];
+
+  // Parse "HH:MM:SS" or "HH:MM"
+  const [startH, startM] = startStr.split(':').map(Number);
+  const [endH, endM] = endStr.split(':').map(Number);
+
+  let currentH = startH;
+  let currentM = startM;
+
+  // Loop until we reach the closing time
+  // Note: This logic assumes opening/closing within a single day cycle (00:00 - 23:59)
+  while (currentH < endH || (currentH === endH && currentM < endM)) {
+    const formatted = `${currentH.toString().padStart(2, '0')}:${currentM.toString().padStart(2, '0')}`;
+    slots.push(formatted);
+
+    // Add 30 minutes
+    currentM += 30;
+    if (currentM >= 60) {
+      currentH++;
+      currentM = 0;
+    }
+  }
+
+  return slots;
 };
 
 // --- Sub-Component: Guest Counter ---
@@ -65,21 +105,19 @@ GuestCounter.propTypes = {
 // --- Main Component: Booking Widget ---
 const BookingWidget = ({
   isHotel = true,
-  searchParamsString = '', // You can still keep this for initial load if needed, or rely entirely on useSearchParams
+  searchParamsString = '', 
   t,
   property,
   onAvailabilityFound,
 }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams(); // Get current params
+  const searchParams = useSearchParams();
 
   // --- 1. Parse URL Params ---
-  // We use useSearchParams() here to ensure we are always in sync with the URL
   const initialValues = useMemo(() => {
     const defaults = getDefaults();
     
-    // Check strict lowercase 'checkin' vs camelCase 'checkIn'
     const urlCheckIn = searchParams.get('checkin') || searchParams.get('checkIn');
     const urlCheckOut = searchParams.get('checkout') || searchParams.get('checkOut');
 
@@ -113,7 +151,30 @@ const BookingWidget = ({
   const [dates, setDates] = useState(initialValues.dates);
   const [guests, setGuests] = useState(initialValues.guests);
 
-  // --- 4. Effects ---
+  // --- 4. Logic: Dynamic Time Slots ---
+  const timeSlots = useMemo(() => {
+    if (isHotel || !property) return [];
+    
+    return generateTimeSlots(
+      property.opening_time, 
+      property.closing_time, 
+      property.is_open_24_hours
+    );
+  }, [isHotel, property]);
+
+  // Validation: Ensure selected time is valid for this restaurant
+  useEffect(() => {
+    if (!isHotel && timeSlots.length > 0) {
+      const isCurrentTimeValid = timeSlots.includes(dates.time);
+      
+      // If current time is empty or invalid, default to the first available slot
+      if (!isCurrentTimeValid) {
+        setDates(prev => ({ ...prev, time: timeSlots[0] }));
+      }
+    }
+  }, [timeSlots, isHotel, dates.time]);
+
+  // --- 5. Effects ---
 
   // Click Outside Handler
   useEffect(() => {
@@ -133,7 +194,7 @@ const BookingWidget = ({
     }
   }, [availableItems, onAvailabilityFound]);
 
-  // Sync state if URL changes externally (e.g. back button)
+  // Sync state if URL changes externally
   useEffect(() => {
     setDates(initialValues.dates);
     setGuests(initialValues.guests);
@@ -142,6 +203,10 @@ const BookingWidget = ({
   // Auto-Search on Mount
   useEffect(() => {
     if (!property?.id) return;
+    
+    // Only search if we have a valid time (for restaurants) or valid dates (for hotels)
+    if (!isHotel && !dates.time) return;
+
     const filters = {
       checkIn: initialValues.dates.checkIn,
       guests: initialValues.guests,
@@ -149,25 +214,22 @@ const BookingWidget = ({
     if (isHotel) {
       filters.checkOut = initialValues.dates.checkOut;
     } else {
-      filters.time = initialValues.dates.time;
+      filters.time = dates.time || initialValues.dates.time;
     }
     checkAvailability(filters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [property?.id]); // Only run on mount or property change, not on every URL change to prevent loops
+  }, [property?.id, dates.time]); // Add dates.time dependency so it searches once time is set
 
-  // --- 5. Handlers ---
+  // --- 6. Handlers ---
 
-  // Helper to update URL
   const updateUrlParams = useCallback(() => {
-    // 1. Create a new URLSearchParams object from the current params
     const params = new URLSearchParams(searchParams.toString());
 
-    // 2. Set Date Params
     params.set('checkin', dates.checkIn);
     
     if (isHotel) {
       params.set('checkout', dates.checkOut);
-      params.delete('time'); // Clean up irrelevant params
+      params.delete('time');
       params.delete('people');
     } else {
       params.set('time', dates.time);
@@ -177,7 +239,6 @@ const BookingWidget = ({
       params.delete('rooms');
     }
 
-    // 3. Set Guest Params
     if (isHotel) {
       params.set('adults', guests.adults.toString());
       params.set('children', guests.children.toString());
@@ -186,15 +247,12 @@ const BookingWidget = ({
       params.set('people', guests.people.toString());
     }
 
-    // 4. Push to router (without scrolling to top)
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }, [dates, guests, isHotel, pathname, router, searchParams]);
 
   const handleSearch = useCallback(() => {
-    // 1. Update the URL first
     updateUrlParams();
 
-    // 2. Trigger the API check
     const filters = {
       checkIn: dates.checkIn,
       guests: guests,
@@ -302,11 +360,15 @@ const BookingWidget = ({
                     onChange={(e) => handleDateChange('time', e.target.value)}
                     className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none appearance-none text-slate-700 font-medium cursor-pointer hover:bg-slate-100 transition-all"
                   >
-                    <option value="18:00">18:00</option>
-                    <option value="19:00">19:00</option>
-                    <option value="20:00">20:00</option>
-                    <option value="21:00">21:00</option>
-                    <option value="22:00">22:00</option>
+                    {timeSlots.length > 0 ? (
+                      timeSlots.map((slot) => (
+                        <option key={slot} value={slot}>
+                          {slot}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="" disabled>Closed</option>
+                    )}
                   </select>
                 </>
               )}
@@ -385,7 +447,7 @@ const BookingWidget = ({
         <button
           type="button"
           onClick={handleSearch}
-          disabled={loading}
+          disabled={loading || (!isHotel && !dates.time)}
           className="w-full mt-2 bg-[#006ce4] hover:bg-[#0057b8] text-white font-bold py-3.5 rounded-lg shadow-sm transition-all active:scale-[0.98] text-sm disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#006ce4]"
         >
           {loading ? (
@@ -418,6 +480,9 @@ BookingWidget.propTypes = {
   property: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     property_type: PropTypes.string,
+    opening_time: PropTypes.string,
+    closing_time: PropTypes.string,
+    is_open_24_hours: PropTypes.bool,
   }),
   onAvailabilityFound: PropTypes.func,
 };

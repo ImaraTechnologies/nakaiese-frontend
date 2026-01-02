@@ -14,6 +14,7 @@ import SeatingOptions from '@/components/Shared/Property/SeatingOptions';
 import WishButton from '@/components/Shared/WishButton/WishButton';
 import { FullPageSpinner } from '@/components/ui/Spinner/Spinner';
 import PropertyFAQ from '@/components/Shared/Property/PropertyFAQ';
+import RestaurantMenu from '@/components/Shared/Property/RestaurantMenu';
 
 export default function PropertyDetailsPage() {
   const params = useParams();
@@ -127,6 +128,10 @@ export default function PropertyDetailsPage() {
               ))}
             </div>
           </section>
+
+          {!isHotel && property.menus && property.menus.length > 0 && (
+             <RestaurantMenu menus={property.menus} t={t} />
+          )}
 
           {/* DYNAMIC ROOM/TABLE LIST */}
           <section id="inventory-list" className="pt-8 border-t border-slate-200 scroll-mt-28">

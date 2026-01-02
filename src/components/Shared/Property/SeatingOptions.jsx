@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
@@ -9,7 +10,6 @@ import {
 // --- UTILS ---
 const cn = (...classes) => classes.filter(Boolean).join(' ');
 
-// Time formatter to make "19:00" -> "7:00 PM"
 const formatTimeDisplay = (timeStr) => {
   if (!timeStr) return '';
   const [hour, minute] = timeStr.split(':');
@@ -19,6 +19,7 @@ const formatTimeDisplay = (timeStr) => {
   return `${h12}:${minute} ${ampm}`;
 };
 
+// Configuration for visual distinctiveness of zones
 const LOCATION_CONFIG = {
   'MH': { icon: Utensils, color: 'text-orange-600', bg: 'bg-orange-50' },
   'WN': { icon: Sun,      color: 'text-sky-600',    bg: 'bg-sky-50' },
@@ -32,6 +33,7 @@ const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
   const router = useRouter();
   const [selectedType, setSelectedType] = useState(null);
 
+  // 1. Group raw tables by their 'location_type'
   const seatingGroups = useMemo(() => {
     if (!tables) return {};
     return tables.reduce((acc, table) => {
@@ -45,10 +47,12 @@ const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
   }, [tables]);
 
   const handleBook = (tableId, timeSlot, count) => {
+    // Preserve existing params and add booking details
     const params = new URLSearchParams(searchParamsString);
     const checkInDate = params.get('checkin') || new Date().toISOString().split('T')[0];
     
     const query = new URLSearchParams({
+      ...Object.fromEntries(params.entries()), // keep existing
       p_id: propertyId,
       item_id: tableId,
       p_t: 'table',
@@ -65,14 +69,13 @@ const SeatingOptions = ({ tables, t, propertyId, searchParamsString }) => {
     <section className="w-full py-8 max-w-3xl">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-          {t('seating_preference') || "Select Seating Area"}
+          {t?.('seating_preference') || "Select Seating Area"}
         </h2>
         <p className="text-sm text-slate-500 mt-1">
-          {t('seating_sub') || "Choose where you'd like to sit"}
+          {t?.('seating_sub') || "Choose where you'd like to sit"}
         </p>
       </div>
       
-      {/* STACKED LIST LAYOUT */}
       <div className="flex flex-col space-y-3">
         {Object.entries(seatingGroups).map(([code, data]) => (
           <SeatingRow
@@ -95,29 +98,49 @@ const SeatingRow = ({
 }) => {
   const config = LOCATION_CONFIG[code] || LOCATION_CONFIG['MH'];
   const Icon = config.icon;
+  
+  // Calculate max capacity for this entire zone (e.g. max table size in Window area)
   const maxCapacity = Math.max(...data.capacities);
   
   // Local State
   const [guestCount, setGuestCount] = useState(2);
-  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [selectedSlot, setSelectedSlot] = useState(null); // { time: string, tableId: string }
 
-  // Translations
-  const label = t(`seating_${code}_label`) || code;
-  const desc = t(`seating_${code}_desc`) || "Standard seating";
+  // Safe translations
+  const label = t?.(`seating_${code}_label`) || code;
+  const desc = t?.(`seating_${code}_desc`) || "Standard seating area";
 
-  // Logic
+  // --- CORE ALGORITHM: AGGREGATION & BEST FIT ---
   const availableSlots = useMemo(() => {
-    const timeMap = new Map();
-    const validTables = data.tables.filter(tbl => tbl.capacity >= guestCount);
+    const slotsMap = new Map(); // Key: TimeString, Value: [TableID, TableID...]
+
+    // 1. FILTER: Only tables that fit the party
+    // 2. SORT: Ascending Capacity. This ensures the [0] index is the "Best Fit" (smallest valid table).
+    const validTables = data.tables
+      .filter(tbl => tbl.capacity >= guestCount)
+      .sort((a, b) => a.capacity - b.capacity);
+
+    // 3. AGGREGATE
     validTables.forEach(table => {
-      (table.slots || []).forEach(slot => {
-        if (slot.is_available && !timeMap.has(slot.start)) {
-          timeMap.set(slot.start, table.id);
+      if (!table.slots) return;
+      
+      table.slots.forEach(slot => {
+        if (slot.is_available) {
+          if (!slotsMap.has(slot.start)) {
+            slotsMap.set(slot.start, []);
+          }
+          // Push table ID. Because we sorted 'validTables' above, 
+          // small tables get pushed first, large tables later.
+          slotsMap.get(slot.start).push(table.id);
         }
       });
     });
-    return Array.from(timeMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
+    // 4. SORT TIMES CHRONOLOGICALLY
+    return Array.from(slotsMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+
   }, [data.tables, guestCount]);
+  // ----------------------------------------------
 
   return (
     <div 
@@ -128,13 +151,12 @@ const SeatingRow = ({
           : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm"
       )}
     >
-      {/* --- CLICKABLE HEADER ROW --- */}
+      {/* --- CLICKABLE HEADER --- */}
       <button 
         onClick={onSelect}
         className="w-full flex items-center justify-between p-4 text-left outline-none"
       >
         <div className="flex items-center gap-4">
-          {/* Icon Box */}
           <div className={cn(
             "w-12 h-12 flex items-center justify-center rounded-lg transition-colors",
             isSelected ? config.bg + " " + config.color : "bg-slate-100 text-slate-500 group-hover:bg-slate-200"
@@ -142,7 +164,6 @@ const SeatingRow = ({
             <Icon className="w-6 h-6" />
           </div>
 
-          {/* Text Info */}
           <div>
             <h4 className={cn("font-bold text-base", isSelected ? 'text-blue-700' : 'text-slate-900')}>
               {label}
@@ -150,14 +171,14 @@ const SeatingRow = ({
             <div className="flex items-center gap-2 mt-0.5">
                <span className="text-sm text-slate-500">{desc}</span>
                <span className="text-slate-300">•</span>
-               <span className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
-                 <Users className="w-3 h-3" /> Max {maxCapacity}
+               {/* Inventory Badge */}
+               <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                 {data.tables.length} {data.tables.length === 1 ? 'Table' : 'Tables'}
                </span>
             </div>
           </div>
         </div>
 
-        {/* Chevron */}
         <div className={cn(
           "w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300",
           isSelected ? "bg-blue-50 text-blue-600 rotate-180" : "text-slate-400"
@@ -166,7 +187,7 @@ const SeatingRow = ({
         </div>
       </button>
 
-      {/* --- EXPANDABLE CONTENT --- */}
+      {/* --- EXPANDABLE BODY --- */}
       <div 
         className={cn(
           "grid transition-[grid-template-rows] duration-300 ease-in-out",
@@ -176,26 +197,25 @@ const SeatingRow = ({
         <div className="overflow-hidden">
           <div className="p-4 pt-0 border-t border-dashed border-slate-100 bg-slate-50/50">
             
-            {/* Control Row: Guests & Slots */}
             <div className="flex flex-col md:flex-row gap-6 mt-4">
               
-              {/* 1. Guest Selector */}
+              {/* 1. GUESTS SELECTOR */}
               <div className="w-full md:w-1/3">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">
-                  {t('guests') || "Party Size"}
+                  {t?.('guests') || "Party Size"}
                 </label>
                 <div className="relative">
                   <select 
                     value={guestCount}
                     onChange={(e) => {
                       setGuestCount(Number(e.target.value));
-                      setSelectedSlot(null);
+                      setSelectedSlot(null); // Reset selection on change
                     }}
                     className="w-full appearance-none bg-white border border-slate-200 text-slate-900 text-sm font-medium rounded-lg p-3 pl-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow outline-none cursor-pointer"
                   >
                     {[...Array(maxCapacity)].map((_, i) => (
                       <option key={i + 1} value={i + 1}>
-                        {i + 1} {i === 0 ? (t('person') || 'Person') : (t('people') || 'People')}
+                        {i + 1} {i === 0 ? (t?.('person') || 'Person') : (t?.('people') || 'People')}
                       </option>
                     ))}
                   </select>
@@ -204,44 +224,58 @@ const SeatingRow = ({
                 </div>
               </div>
 
-              {/* 2. Time Slots */}
+              {/* 2. TIME SLOTS GRID */}
               <div className="w-full md:w-2/3">
                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 block">
-                   {t('available_times') || "Select Time"}
+                   {t?.('available_times') || "Select Time"}
                  </label>
                  
                  {availableSlots.length > 0 ? (
                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                     {availableSlots.map(([timeStr, tableId]) => {
+                     {availableSlots.map(([timeStr, tableIds]) => {
                        const formattedTime = formatTimeDisplay(timeStr);
                        const isActive = selectedSlot?.time === timeStr;
+                       const countAvailable = tableIds.length;
                        
                        return (
                          <button
                            key={timeStr}
-                           onClick={() => setSelectedSlot({ time: timeStr, tableId })}
+                           onClick={() => {
+                               // Auto-assign the first table ID (Best Fit)
+                               setSelectedSlot({ time: timeStr, tableId: tableIds[0] }) 
+                           }}
                            className={cn(
-                             "px-2 py-2 text-xs font-semibold rounded-lg border transition-all duration-200 text-center",
+                             "relative px-2 py-2 text-xs font-semibold rounded-lg border transition-all duration-200 text-center flex flex-col items-center justify-center gap-0.5",
                              isActive
                                ? "bg-blue-600 text-white border-blue-600 shadow-md transform scale-[1.02]"
                                : "bg-white text-slate-700 border-slate-200 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
                            )}
                          >
-                           {formattedTime}
+                           <span>{formattedTime}</span>
+                           {/* Availability Indicator */}
+                           {countAvailable > 1 && (
+                                <span className={cn(
+                                    "text-[10px] font-normal",
+                                    isActive ? "text-blue-100" : "text-emerald-600"
+                                )}>
+                                    {countAvailable} left
+                                </span>
+                           )}
                          </button>
                        );
                      })}
                    </div>
                  ) : (
-                   <div className="p-4 w-full bg-white border border-slate-200 border-dashed rounded-lg text-center">
-                     <Clock className="w-5 h-5 text-slate-300 mx-auto mb-1" />
-                     <p className="text-xs text-slate-500">No tables for {guestCount} guests.</p>
+                   <div className="p-4 w-full bg-white border border-slate-200 border-dashed rounded-lg text-center flex flex-col items-center justify-center min-h-[100px]">
+                     <Clock className="w-5 h-5 text-slate-300 mb-2" />
+                     <p className="text-xs text-slate-500 font-medium">No tables available</p>
+                     <p className="text-[10px] text-slate-400">Try a smaller party size</p>
                    </div>
                  )}
               </div>
             </div>
 
-            {/* Bottom: Book Button */}
+            {/* 3. CONFIRM BUTTON */}
             <div className="mt-6 flex justify-end">
               <button
                 disabled={!selectedSlot}
@@ -256,7 +290,7 @@ const SeatingRow = ({
                     : "bg-slate-200 text-slate-400 cursor-not-allowed"
                 )}
               >
-                {t('confirm_selection') || "Confirm Reservation"}
+                {t?.('confirm_selection') || "Confirm Reservation"}
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

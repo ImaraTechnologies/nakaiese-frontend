@@ -507,7 +507,6 @@
     "copyright": "© {year} Nakiese. All rights reserved."
   },
   "Property": {
-    
     "title": "Property Details",
     "adults_label": "Adults",
     "children_label": "Children",
@@ -529,6 +528,7 @@
     "amenities": "Popular Amenities",
     "availableRooms": "Available Rooms",
     "ourMenu": "Our Menu",
+    "menu_title": "Our Menu",
     "selectRoom": "Select Room",
     "guestReviews": "Guest Reviews",
     "rated": "This property is rated",
@@ -567,20 +567,18 @@
     "limited_availability": "LIMITED",
     "max_capacity": "Max {count}",
     "confirm_selection": "Confirm Selection",
-    
     "seating_MH_label": "Main Hall",
     "seating_MH_desc": "Classic dining atmosphere",
     "seating_WN_label": "Window Side",
     "seating_WN_desc": "Scenic views & natural light",
     "seating_BT_label": "Private Booth",
     "seating_BT_desc": "Intimate & noise-reduced",
-    "seating_PT_label": "Patio",
-    "seating_PT_desc": "Fresh air & open seating",
+    "seating_PT_label": "Outdoor Patio",
+    "seating_PT_desc": "Fresh air & open space",
     "seating_RT_label": "Rooftop",
-    "seating_RT_desc": "Premium skyline experience",
-    "seating_BR_label": "Bar",
-    "seating_BR_desc": "Casual high-top seating",
-
+    "seating_RT_desc": "Skyline views & lounge vibe",
+    "seating_BR_label": "Bar Seating",
+    "seating_BR_desc": "Casual counter seating",
     "person": "person",
     "people": "people",
     "available_times": "Available Times",
