@@ -58,7 +58,7 @@ const AFRICAN_COUNTRIES = [
   { code: 'ZW', name: 'Zimbabwe', dial: '+263' },
 ];
 
-const InputGroup = ({ label, type = "text", placeholder, required = true, name, onChange }) => (
+const InputGroup = ({ label, type = "text", placeholder, required = true, name, value, onChange }) => (
   <div className="space-y-1.5">
     <label className="text-sm font-semibold text-slate-700">
       {label} {required && <span className="text-red-500">*</span>}
@@ -67,6 +67,7 @@ const InputGroup = ({ label, type = "text", placeholder, required = true, name, 
       type={type} 
       name={name}
       required={required}
+      value={value || ''}
       onChange={onChange}
       placeholder={placeholder}
       className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900 bg-white"
@@ -74,29 +75,25 @@ const InputGroup = ({ label, type = "text", placeholder, required = true, name, 
   </div>
 );
 
-// --- NEW COMPONENT: Country Select ---
-const CountrySelect = ({ label, required = true, value, onChange }) => (
+const CountrySelect = ({ label, required = true, value, onChange, name }) => (
   <div className="space-y-1.5">
     <label className="text-sm font-semibold text-slate-700">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative">
       <select 
-        value={value}
+        name={name}
+        value={value || ''}
         onChange={onChange}
         required={required}
         className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-slate-900 bg-white appearance-none cursor-pointer"
       >
         <option value="" disabled>Select Country</option>
         {AFRICAN_COUNTRIES.map((country) => (
-          <option key={country.code} value={country.name}>
-            {country.name}
-          </option>
+          <option key={country.code} value={country.name}>{country.name}</option>
         ))}
-        {/* Fallback option if needed */}
         <option value="Other">Other / International</option>
       </select>
-      {/* Custom Arrow */}
       <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-500">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
       </div>
@@ -104,69 +101,56 @@ const CountrySelect = ({ label, required = true, value, onChange }) => (
   </div>
 );
 
-// --- NEW COMPONENT: Phone with Country Code ---
-const PhoneInput = ({ label, required = false }) => {
-  const [code, setCode] = useState('+221'); // Default to Senegal or similar
-
-  return (
-    <div className="space-y-1.5">
-      <label className="text-sm font-semibold text-slate-700">
-        {label} {required && <span className="text-red-500">*</span>} 
-        {!required && <span className="text-slate-400 font-normal text-xs ml-1">(Optional)</span>}
-      </label>
-      <div className="flex rounded-lg border border-slate-300 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/10 transition-all bg-white overflow-hidden">
-        {/* Country Code Selector */}
-        <div className="relative border-r border-slate-200 bg-slate-50">
-          <select 
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="h-full py-3 pl-3 pr-8 bg-transparent text-slate-700 text-sm font-medium outline-none appearance-none cursor-pointer w-[110px]"
-          >
-            {AFRICAN_COUNTRIES.map((c) => (
-              <option key={c.code} value={c.dial}>
-                {c.code} {c.dial}
-              </option>
-            ))}
-             <option value="+1">US +1</option>
-             <option value="+44">UK +44</option>
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-400">
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-          </div>
-        </div>
-        
-        {/* Phone Number Input */}
-        <input 
-          type="tel" 
-          placeholder="77 123 45 67"
-          required={required}
-          className="w-full px-4 py-3 outline-none text-slate-900 placeholder:text-slate-400"
-        />
-      </div>
-    </div>
-  );
-};
-
-export default function CustomerForm({ t }) {
-  const [formData, setFormData] = useState({ country: 'Senegal' });
+export default function CustomerForm({ t, formData, onChange }) {
+  // Helper to handle standard inputs
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    onChange(name, value);
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <InputGroup label={t('first_name') || "First Name"} placeholder="John" name="first_name" />
-      <InputGroup label={t('last_name') || "Last Name"} placeholder="Doe" name="last_name" />
+      <InputGroup 
+        label={t('first_name') || "First Name"} 
+        placeholder="John" 
+        name="first_name" 
+        value={formData.first_name} 
+        onChange={handleChange} 
+      />
+      <InputGroup 
+        label={t('last_name') || "Last Name"} 
+        placeholder="Doe" 
+        name="last_name" 
+        value={formData.last_name} 
+        onChange={handleChange} 
+      />
       
-      <InputGroup label={t('email') || "Email Address"} type="email" placeholder="john@example.com" name="email" />
+      <InputGroup 
+        label={t('email') || "Email Address"} 
+        type="email" 
+        placeholder="john@example.com" 
+        name="email" 
+        value={formData.email} 
+        onChange={handleChange} 
+      />
       
-      {/* Updated Country Select */}
-      <CountrySelect 
-        label={t('country') || "Country/Region"} 
-        value={formData.country}
-        onChange={(e) => setFormData({...formData, country: e.target.value})}
+      <InputGroup 
+        label={t('phone') || "Phone Number"} 
+        placeholder="+221 77 123 45 67" 
+        name="phone_number" 
+        value={formData.phone_number} 
+        onChange={handleChange} 
       />
 
-      {/* Updated Phone Input (Optional) */}
-      <PhoneInput label={t('phone') || "Phone Number"} required={false} />
-      
+      <div className="md:col-span-2">
+         <CountrySelect 
+            label={t('country') || "Country/Region"} 
+            name="country"
+            value={formData.country}
+            onChange={handleChange}
+        />
+      </div>
+
       <div className="md:col-span-2 space-y-1.5">
         <label className="text-sm font-semibold text-slate-700">
           {t('special_requests') || "Special Requests"} <span className="text-slate-400 font-normal text-xs ml-1">(Optional)</span>
@@ -174,6 +158,8 @@ export default function CustomerForm({ t }) {
         <textarea 
           rows={3}
           name="special_requests"
+          value={formData.special_requests || ''}
+          onChange={handleChange}
           className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all placeholder:text-slate-400 text-slate-900 bg-white resize-none"
           placeholder={t('requests_placeholder') || "Late check-in, dietary restrictions, etc."}
         />
