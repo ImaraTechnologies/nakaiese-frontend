@@ -15,6 +15,9 @@ import Testimonials from "@/components/Shared/Testimonials/Testimonials";
 import Newsletter from "@/components/Shared/Newsletter/Newsletter";
 import { FullPageSpinner } from '@/components/ui/Spinner/Spinner';
 
+
+
+
 // Keep destinations static for now (or move to a config file)
 const destinationItems = [
   { name: "Zanzibar", image: "/banner.jpg" },
