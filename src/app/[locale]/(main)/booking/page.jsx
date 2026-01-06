@@ -101,17 +101,16 @@ export default function BookingPage() {
         // If Restaurant -> key is 'table', If Hotel -> key is 'room_type'
         [bookingContext.isRestaurant ? 'table' : 'room_type']: bookingContext.itemId,
         quantity: 1, // Default to 1 for direct bookings
-        
-        // Optional: If you want to send price from frontend (backend should verify though)
-        // price_per_unit: ... 
+
       }]
     };
 
     // --- EXECUTE ---
     mutate(payload, {
-      onSuccess: (responseData) => {
+    onSuccess: () => {
         // toast.success("Booking Confirmed!");
-        router.push(`/booking/success/${responseData.id}`);
+        router.push(`/booking/success`);
+        
       },
       onError: (err) => {
         console.error("Booking Error:", err);

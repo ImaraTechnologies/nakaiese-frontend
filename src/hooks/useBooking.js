@@ -1,34 +1,39 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createBooking } from "@/services/bookingService"; 
-
+import { createBooking } from "@/services/bookingService"; // Adjust path as needed
+import useBookingStore from "@/store/useBookingStore";
 
 export const useCreateBooking = () => {
     const queryClient = useQueryClient();
+    
+    // Get the addBooking action from our store
+    const { addBooking } = useBookingStore();
 
     return useMutation({
         mutationFn: (formData) => createBooking(formData),
-        
-        onSuccess: (data) => {
-            // 1. Success Notification
-            // toast.success("Booking confirmed successfully!");
-            console.log("Booking Success:", data);
 
-            // 2. Invalidate relevant queries to refresh UI data
-            // Example: If you have a list of bookings, refresh it now.
-            queryClient.invalidateQueries({ queryKey: ['bookings'] }); 
+        onSuccess: (data) => {
+            // 1. Save Safe Data to Store
+            // If the user books the same room for a different date, 
+            // the server returns a NEW unique 'id', so addBooking will treat it as a new entry.
+            if (data?.id) {
+                addBooking(data);
+            }
+
+            // 2. Invalidate queries to refresh UI (e.g. Booking History list)
+            queryClient.invalidateQueries({ queryKey: ['bookings'] });
             
-            // Optional: If you need to refresh user profile or credits
-            // queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+            // Optional: Invalidate availability if you are showing a calendar
+            // queryClient.invalidateQueries({ queryKey: ['room-availability'] });
         },
-        
+
         onError: (error) => {
-            // 1. Extract error message safely
-            // Axios stores the response data in error.response.data
+            // Robust Error Handling for Django/DRF responses
             const serverMessage = error.response?.data?.message || "Something went wrong.";
-            const validationErrors = error.response?.data?.errors; // If Django sends field errors
+            const validationErrors = error.response?.data?.errors; 
 
             console.error("Booking Failed:", serverMessage, validationErrors);
-            
+
+            // You can trigger your Toast notification here
             // toast.error(serverMessage);
         },
     });
