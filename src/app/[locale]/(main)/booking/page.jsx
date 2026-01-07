@@ -107,9 +107,9 @@ export default function BookingPage() {
 
     // --- EXECUTE ---
     mutate(payload, {
-    onSuccess: () => {
+    onSuccess: (response) => {
         // toast.success("Booking Confirmed!");
-        router.push(`/booking/success`);
+        router.push(`/booking/success/${response?.id}?e=${response?.customer_info.email}`);
         
       },
       onError: (err) => {

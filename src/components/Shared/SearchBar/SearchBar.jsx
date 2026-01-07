@@ -57,7 +57,7 @@ const SearchBar = () => {
   } = useSearchBarLogic();
 
   return (
-    <div className="w-full max-w-[1140px] relative font-sans text-gray-800 z-50">
+    <div className={`w-full max-w-[1140px] relative font-sans text-gray-800 z-50`}>
 
       {/* --- TABS --- */}
       <div className="flex gap-2 mb-2 ml-1">

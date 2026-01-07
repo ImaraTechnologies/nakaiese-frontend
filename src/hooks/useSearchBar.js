@@ -89,7 +89,7 @@ export const useSearchBarLogic = () => {
       if (startDate) params.set("checkin", format(startDate, "yyyy-MM-dd"));
       if (endDate) params.set("checkout", format(endDate, "yyyy-MM-dd"));
     } else {
-      if (singleDate) params.set("date", format(singleDate, "yyyy-MM-dd"));
+      if (singleDate) params.set("checkin", format(singleDate, "yyyy-MM-dd"));
     }
 
     // Guests & Extras

@@ -25,7 +25,7 @@ const formatBookingForStorage = (data) => {
 
 const useBookingStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       // We use an ARRAY to allow multiple bookings (different dates/rooms)
       bookings: [],
 
@@ -54,6 +54,11 @@ const useBookingStore = create(
 
       // Action: Clear all (e.g., on Logout)
       clearBookings: () => set({ bookings: [] }),
+
+      getBooking: (id) => {
+        const state = get();
+        return state.bookings.find((b) => b.id === id) || null;
+      },
     }),
     {
       name: 'booking-storage', // The key inside localStorage

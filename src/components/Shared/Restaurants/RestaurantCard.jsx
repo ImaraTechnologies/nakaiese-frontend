@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { MapPin, Star, ChefHat, Clock, Utensils, Heart } from 'lucide-react';
 import WishButton from '../WishButton/WishButton';
 
-const RestaurantCard = ({ data, t }) => {
+const RestaurantCard = ({ data, searchParamsString = '', t }) => {
     // 1. CONFIG & SAFETY
     // Default to localhost if env var is missing
     const API_URL = process.env.NEXT_PUBLIC_MEDIA_BASE_URL || 'http://127.0.0.1:8000';
@@ -41,9 +41,14 @@ const RestaurantCard = ({ data, t }) => {
         maximumFractionDigits: 0,
     }).format(data.min_price || 0);
 
+    const propertyUrl = searchParamsString
+        ? `/properties/${data.id}?${searchParamsString}`
+        : `/properties/${data.id}`;
+
+
     return (
         <Link
-            href={`/properties/${data.id}`}
+            href={propertyUrl}
             className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col h-full"
         >
 
@@ -59,7 +64,7 @@ const RestaurantCard = ({ data, t }) => {
                 />
 
                 {/* Category Tag */}
-                <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-gray-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1 z-10">
+                <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-md  text-gray-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1 ">
                     <ChefHat className="w-3 h-3 text-orange-500" />
                     {primaryCategory}
                 </span>
@@ -72,7 +77,7 @@ const RestaurantCard = ({ data, t }) => {
                 )}
 
                 {/* Favorite Button */}
-                <WishButton item={data}/>
+                <WishButton item={data} />
             </div>
 
             {/* --- Content Area --- */}

@@ -26,7 +26,7 @@ const WishButton = ({ item, customClass='absolute top-3 right-3' }) => {
         <button
             onClick={handleWishlistToggle}
             className={`
-                ${customClass} p-2 z-10 rounded-full 
+                ${customClass} p-2  rounded-full 
                 transition-all shadow-sm backdrop-blur-sm
                 ${isInWishlist
                     ? 'bg-red-50 text-red-500 hover:bg-red-100'

@@ -1,18 +1,34 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Filter, ChevronDown, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useProperties } from '@/hooks/useProperties';
+
+
 
 import PageHeader from '@/components/Shared/Restaurants/PageHeader';
 import FilterSection from '@/components/Shared/Restaurants/FilterSection';
 import RestaurantGrid from '@/components/Shared/Restaurants/RestaurantGrid';
 import MobileFilterDrawer from '@/components/Shared/MobileFilterDrawer/MobileFilterDrawer';
+import { useSearchParams } from 'next/navigation';
 
 export default function RestaurantsPage() {
   const t = useTranslations('RestaurantsPage');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const searchParams = useSearchParams();
+
+  const filters = useMemo(() => {
+    const params = Object.fromEntries(searchParams.entries());
+
+    return {
+      ...params,
+      property_type: 'RT',
+    };
+  }, [searchParams]);
+
+  const currentSearchString = searchParams.toString();
+
 
   // --- DATA FETCHING (Refactored) ---
   const {
@@ -21,7 +37,7 @@ export default function RestaurantsPage() {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = useProperties({ property_type: 'RT' });
+  } = useProperties(filters);
 
   const allRestaurants = data?.pages.flatMap((page) => page.results) || [];
 
@@ -31,7 +47,7 @@ export default function RestaurantsPage() {
 
       <div className="container mx-auto px-4 mt-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          
+
           <aside className="hidden lg:block w-1/4 min-w-[280px]">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 sticky top-24">
               <div className="flex items-center justify-between mb-6">
@@ -67,7 +83,7 @@ export default function RestaurantsPage() {
               </div>
             </div>
 
-            <RestaurantGrid restaurants={allRestaurants} isLoading={isLoading} t={t} />
+            <RestaurantGrid restaurants={allRestaurants} searchParamsString={currentSearchString}  isLoading={isLoading} t={t} />
 
             <div className="mt-12 text-center">
               {hasNextPage ? (
@@ -93,20 +109,20 @@ export default function RestaurantsPage() {
         </div>
       </div>
 
-      <MobileFilterDrawer 
-        isOpen={isMobileFilterOpen} 
-        onClose={() => setIsMobileFilterOpen(false)} 
+      <MobileFilterDrawer
+        isOpen={isMobileFilterOpen}
+        onClose={() => setIsMobileFilterOpen(false)}
         title={t('Filters.title')}
         footerAction={
-          <button 
-            onClick={() => setIsMobileFilterOpen(false)} 
+          <button
+            onClick={() => setIsMobileFilterOpen(false)}
             className="w-full py-3 bg-blue-900 text-white font-bold rounded-lg hover:bg-blue-800"
           >
             {t('Filters.show_results')}
           </button>
         }
       >
-         <FilterSection t={t} />
+        <FilterSection t={t} />
       </MobileFilterDrawer>
     </div>
   );

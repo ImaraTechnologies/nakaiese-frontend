@@ -3,7 +3,7 @@ import React from 'react';
 import { Search } from 'lucide-react';
 import RestaurantCard from './RestaurantCard';
 
-export default function RestaurantGrid({ restaurants, isLoading, t }) {
+export default function RestaurantGrid({ restaurants, searchParamsString='', isLoading, t }) {
   
   // 1. Initial Loading State (Skeletons)
   if (isLoading) {
@@ -38,7 +38,7 @@ export default function RestaurantGrid({ restaurants, isLoading, t }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
       {restaurants.map((restaurant) => (
-        <RestaurantCard key={restaurant.id} data={restaurant} t={t} />
+        <RestaurantCard key={restaurant.id} data={restaurant} t={t} searchParamsString={searchParamsString} />
       ))}
     </div>
   );
