@@ -633,5 +633,26 @@
     "pay_mobile_label": "Mobile Money",
     "pay_mobile_sub": "Wave, Orange Money, Free Money",
     "no_payment_methods": "Aucun moyen de paiement configuré pour cet établissement."
+  },
+  "BookingSuccess": {
+    "loading": "Finalisation de votre réservation...",
+    "not_found_title": "Réservation introuvable",
+    "not_found_desc": "Nous n'avons pas pu récupérer les détails de cette réservation.",
+    "booking_confirmed": "Réservation confirmée !",
+    "sent_details": "Nous avons envoyé les détails à <email>{email}</email>",
+    "booking_reference": "Référence de réservation",
+    "click_to_copy": "Cliquez pour copier",
+    "check_in": "Arrivée",
+    "check_out": "Départ",
+    "arrival_time": "Heure d'arrivée",
+    "na": "N/A",
+    "upsell_title": "Ne perdez pas cette réservation",
+    "upsell_desc": "Créez un compte maintenant pour enregistrer cette réservation dans votre historique.",
+    "create_account": "Créer un compte",
+    "login": "Connexion",
+    "check_status": "Voir le statut",
+    "return_home": "Retour à l'accueil",
+    "secure_msg": "Réservation sécurisée par Nakiese",
+    "copy_success": "Référence copiée"
   }
 }

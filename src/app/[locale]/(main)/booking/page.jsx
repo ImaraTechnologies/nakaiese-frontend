@@ -20,15 +20,15 @@ export default function BookingPage() {
   const t = useTranslations('Booking');
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // --- 1. DATA FETCHING ---
   const { data, isLoading, error } = usePropertyInfo(searchParams.toString());
   const { mutate, isPending } = useCreateBooking();
 
   // --- 2. STATE MANAGEMENT ---
   const [customerInfo, setCustomerInfo] = useState({
-    first_name: '', last_name: '', email: '', 
-    phone_number: '', country: '', special_requests: '', 
+    first_name: '', last_name: '', email: '',
+    phone_number: '', country: '', special_requests: '',
     is_booking_for_myself: true
   });
   const [paymentMethod, setPaymentMethod] = useState('COA');
@@ -36,12 +36,13 @@ export default function BookingPage() {
   // --- 3. SMART CONTEXT DERIVATION ---
   // Detect Booking Type based on URL params (RT = Restaurant, HT = Hotel)
   const bookingContext = useMemo(() => {
-    const type = searchParams.get('p_t') || 'HT'; // Default to Hotel
+    const type = searchParams.get('p_t') || 'HL'; // Default to Hotel
     const itemId = searchParams.get('item_id');
     const checkin = searchParams.get('checkin');
     const checkout = searchParams.get('checkout');
     const time = searchParams.get('time');
-    
+    const rawQuantity = searchParams.get('quantity');
+
     // Normalize Guests: If 'guests' param exists (Restaurant), use it. Else use adults/children.
     const rawGuests = searchParams.get('guests');
     const adults = parseInt(searchParams.get('adults') || (rawGuests ? rawGuests : 1));
@@ -49,11 +50,12 @@ export default function BookingPage() {
 
     return {
       isRestaurant: type === 'RT',
+      quantity: rawQuantity,
       itemId,
       dates: {
         start: checkin,
         // For Restaurants, End Date is same as Start Date
-        end: type === 'RT' ? checkin : checkout, 
+        end: type === 'RT' ? checkin : checkout,
       },
       time: type === 'RT' ? time : null, // Hotels don't send arrival_time
       counts: { adults, children }
@@ -72,12 +74,12 @@ export default function BookingPage() {
     const payload = {
       property: data.property.id,
       status: "PD",
-      
+
       // Date & Time Logic
       start_date: bookingContext.dates.start,
       end_date: bookingContext.dates.end,
       arrival_time: bookingContext.time, // Will be null for Hotels, "HH:MM" for Restaurants
-      
+
       // Guest Logic
       number_of_adults: bookingContext.counts.adults,
       number_of_children: bookingContext.counts.children,
@@ -100,17 +102,16 @@ export default function BookingPage() {
       items: [{
         // If Restaurant -> key is 'table', If Hotel -> key is 'room_type'
         [bookingContext.isRestaurant ? 'table' : 'room_type']: bookingContext.itemId,
-        quantity: 1, // Default to 1 for direct bookings
-
+        quantity: bookingContext.quantity > 0 ? bookingContext.quantity : 1,
       }]
     };
 
     // --- EXECUTE ---
     mutate(payload, {
-    onSuccess: (response) => {
+      onSuccess: (response) => {
         // toast.success("Booking Confirmed!");
         router.push(`/booking/success/${response?.id}?e=${response?.customer_info.email}`);
-        
+
       },
       onError: (err) => {
         console.error("Booking Error:", err);
@@ -127,7 +128,7 @@ export default function BookingPage() {
   };
 
   if (isLoading) return <FullPageSpinner />;
-  
+
   if (error || !data) {
     return (
       <ErrorState onBack={() => router.back()} />
@@ -137,7 +138,7 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen bg-slate-50 py-12">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">{t('page_title') || "Confirm Your Booking"}</h1>
@@ -148,24 +149,24 @@ export default function BookingPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          
+
           <div className="lg:col-span-2 space-y-8">
             {/* 1. Customer Details */}
             <SectionWrapper title={t('customer_details') || "Your Details"} icon={User} iconColor="text-blue-600" iconBg="bg-blue-50">
-              <CustomerForm 
-                t={t} 
-                formData={customerInfo} 
-                onChange={handleCustomerChange} 
+              <CustomerForm
+                t={t}
+                formData={customerInfo}
+                onChange={handleCustomerChange}
               />
             </SectionWrapper>
 
             {/* 2. Payment Method */}
             <SectionWrapper title={t('payment_method') || "Payment"} icon={CreditCard} iconColor="text-green-600" iconBg="bg-green-50">
-              <PaymentMethodSelector 
-                t={t} 
-                data={data.property} 
+              <PaymentMethodSelector
+                t={t}
+                data={data.property}
                 value={paymentMethod}
-                onChange={setPaymentMethod} 
+                onChange={setPaymentMethod}
               />
             </SectionWrapper>
 
@@ -177,10 +178,10 @@ export default function BookingPage() {
 
           {/* Sidebar Summary */}
           <div className="lg:col-span-1 lg:sticky lg:top-24 space-y-6">
-            <BookingSummary 
-              apiData={data} 
-              t={t} 
-              searchParams={searchParams} 
+            <BookingSummary
+              apiData={data}
+              t={t}
+              searchParams={searchParams}
               isRestaurant={bookingContext.isRestaurant} // Pass this to Summary for correct labels
             />
             <div className="hidden lg:block">
@@ -222,7 +223,7 @@ const ErrorState = ({ onBack }) => (
 );
 
 const SubmitButton = ({ isSubmitting, t }) => (
-  <button 
+  <button
     type="submit"
     disabled={isSubmitting}
     className="w-full bg-[#006ce4] hover:bg-[#0057b8] text-white text-lg font-bold py-4 rounded-xl shadow-lg shadow-blue-900/10 transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"

@@ -633,5 +633,26 @@
     "pay_mobile_label": "Mobile Money",
     "pay_mobile_sub": "Wave, Orange Money, Free Money",
     "no_payment_methods": "No payment methods configured for this property."
+  },
+  "BookingSuccess": {
+    "loading": "Finalizing your booking...",
+    "not_found_title": "Booking Not Found",
+    "not_found_desc": "We couldn't retrieve the details for this reservation. It may have expired or does not exist.",
+    "booking_confirmed": "Booking Confirmed!",
+    "sent_details": "We've sent the details to <email>{email}</email>",
+    "booking_reference": "Booking Reference",
+    "click_to_copy": "Click to copy",
+    "check_in": "Check In",
+    "check_out": "Check Out",
+    "arrival_time": "Arrival Time",
+    "na": "N/A",
+    "upsell_title": "Don't lose this booking",
+    "upsell_desc": "Create an account now to save this reservation to your history, modify dates, and get faster checkouts.",
+    "create_account": "Create Account",
+    "login": "Log In",
+    "check_status": "Check Booking Status",
+    "return_home": "Return Home",
+    "secure_msg": "Secure booking processed by Nakiese",
+    "copy_success": "Reference copied to clipboard"
   }
 }
