@@ -21,7 +21,7 @@ const getDefaults = () => {
 // --- Utility: Generate Time Slots ---
 const generateTimeSlots = (startStr, endStr, isOpen24Hours) => {
   const slots = [];
-  
+
   // 1. Handle 24 Hours
   if (isOpen24Hours) {
     for (let h = 0; h < 24; h++) {
@@ -75,11 +75,11 @@ const GuestCounter = ({ label, value, onUpdate, min = 0 }) => (
       >
         <Minus size={14} />
       </button>
-      
+
       <span className="w-4 text-center text-sm font-bold text-slate-900 tabular-nums">
         {value}
       </span>
-      
+
       <button
         type="button"
         onClick={(e) => {
@@ -105,7 +105,7 @@ GuestCounter.propTypes = {
 // --- Main Component: Booking Widget ---
 const BookingWidget = ({
   isHotel = true,
-  searchParamsString = '', 
+  searchParamsString = '',
   t,
   property,
   onAvailabilityFound,
@@ -117,7 +117,7 @@ const BookingWidget = ({
   // --- 1. Parse URL Params ---
   const initialValues = useMemo(() => {
     const defaults = getDefaults();
-    
+
     const urlCheckIn = searchParams.get('checkin') || searchParams.get('checkIn');
     const urlCheckOut = searchParams.get('checkout') || searchParams.get('checkOut');
 
@@ -154,10 +154,10 @@ const BookingWidget = ({
   // --- 4. Logic: Dynamic Time Slots ---
   const timeSlots = useMemo(() => {
     if (isHotel || !property) return [];
-    
+
     return generateTimeSlots(
-      property.opening_time, 
-      property.closing_time, 
+      property.opening_time,
+      property.closing_time,
       property.is_open_24_hours
     );
   }, [isHotel, property]);
@@ -166,7 +166,7 @@ const BookingWidget = ({
   useEffect(() => {
     if (!isHotel && timeSlots.length > 0) {
       const isCurrentTimeValid = timeSlots.includes(dates.time);
-      
+
       // If current time is empty or invalid, default to the first available slot
       if (!isCurrentTimeValid) {
         setDates(prev => ({ ...prev, time: timeSlots[0] }));
@@ -203,7 +203,7 @@ const BookingWidget = ({
   // Auto-Search on Mount
   useEffect(() => {
     if (!property?.id) return;
-    
+
     // Only search if we have a valid time (for restaurants) or valid dates (for hotels)
     if (!isHotel && !dates.time) return;
 
@@ -226,7 +226,7 @@ const BookingWidget = ({
     const params = new URLSearchParams(searchParams.toString());
 
     params.set('checkin', dates.checkIn);
-    
+
     if (isHotel) {
       params.set('checkout', dates.checkOut);
       params.delete('time');
@@ -271,7 +271,7 @@ const BookingWidget = ({
     setGuests((prev) => {
       const newValue = operation === 'inc' ? prev[type] + 1 : prev[type] - 1;
       const minValue = type === 'children' ? 0 : 1;
-      
+
       if (newValue < minValue) return prev;
       return { ...prev, [type]: newValue };
     });
@@ -293,7 +293,7 @@ const BookingWidget = ({
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 w-full max-w-md sticky top-24 transition-all duration-200">
-      
+
       {/* Title */}
       <div className="mb-6 border-b border-slate-100 pb-4">
         <h3 className="text-xl font-extrabold text-slate-900">
@@ -311,10 +311,10 @@ const BookingWidget = ({
 
       {/* Form Fields */}
       <div className="space-y-4">
-        
+
         {/* Date / Time Inputs */}
         <div className="grid grid-cols-2 gap-3">
-          
+
           {/* Check-In */}
           <div className="space-y-1">
             <label htmlFor="check-in-date" className="text-[10px] font-bold uppercase text-slate-400 tracking-wide block">
@@ -447,7 +447,7 @@ const BookingWidget = ({
         <button
           type="button"
           onClick={handleSearch}
-          disabled={loading || (!isHotel && !dates.time)}
+          disabled={loading}
           className="w-full mt-2 bg-[#006ce4] hover:bg-[#0057b8] text-white font-bold py-3.5 rounded-lg shadow-sm transition-all active:scale-[0.98] text-sm disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#006ce4]"
         >
           {loading ? (
