@@ -39,17 +39,25 @@ export default function BookingSummary({ apiData, t, searchParams }) {
   const formatTimeSlot = (timeStr) => {
     if (!timeStr) return '';
 
-    // Create a date object for today with the specific time
     const [hours, minutes] = timeStr.split(':');
-    const date = new Date();
-    date.setHours(parseInt(hours, 10));
-    date.setMinutes(parseInt(minutes, 10));
 
-    // USE format.dateTime() instead of format.time()
+    // 1. Construct the Date explicitly in UTC
+    // We use a fixed date (or today) but force UTC hours/minutes
+    const now = new Date();
+    const date = new Date(Date.UTC(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+      parseInt(hours, 10),
+      parseInt(minutes, 10)
+    ));
+
+    // 2. Format using 'timeZone: UTC' to prevent shifting
     return format.dateTime(date, {
       hour: 'numeric',
       minute: 'numeric',
-      hour12: true // Forces 12-hour format (e.g., 7:30 PM)
+      hour12: true,
+      timeZone: 'UTC' // <--- Crucial: Prevents converting to local server/client time
     });
   };
 
