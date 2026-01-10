@@ -10,3 +10,15 @@ export const getCities = async () => {
         throw error;
     }
 };
+
+export const getCityById = async (id) => {
+    try{
+        const response = await localapi.get(`locations/retreive/cities/?id=${id}`);
+        return response.data;
+    }
+    catch (error) {
+        console.error(`Error fetching city with id ${id}:`, error);
+        throw error;
+    }
+}
+

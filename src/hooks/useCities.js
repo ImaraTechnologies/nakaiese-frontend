@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useLocale } from 'next-intl';
-import { getCities } from "@/services/citiesServices";
+import { getCities, getCityById } from "@/services/citiesServices";
 
 export const useCities = () => {
     const locale = useLocale();
@@ -17,3 +17,18 @@ export const useCities = () => {
         retry: 2, // Retry failed requests twice before throwing error
     });
 };
+
+export const useCityById = (id) => {
+    const locale = useLocale();
+
+    return useQuery({
+        queryKey: ['city', id, locale],
+        queryFn: () => getCityById(id, locale),
+        
+        // Production Grade Options:
+        staleTime: 1000 * 60 * 60 * 24, // 24 hours
+        gcTime: 1000 * 60 * 60 * 24,
+        refetchOnWindowFocus: false,
+        retry: 2,
+    });
+}
