@@ -55,6 +55,9 @@ export default function BookingSummary({ apiData, t, searchParams }) {
 
   const formattedTime = formatTimeSlot(timeSlotRaw);
 
+  // Debugging Log
+  console.log('Formatted Time Slot:', formattedTime);
+
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden ">
 
