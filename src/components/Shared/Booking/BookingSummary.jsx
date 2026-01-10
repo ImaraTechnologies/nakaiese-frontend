@@ -32,6 +32,8 @@ export default function BookingSummary({ apiData, t, searchParams }) {
   const checkOutDate = searchParams.get('checkout') ? new Date(searchParams.get('checkout')) : null;
   const timeSlotRaw = searchParams.get('time') || summary.time;
 
+  console.log('Raw Time Slot:', timeSlotRaw);
+
   // --- FIX: Time Formatter Helper ---
   const formatTimeSlot = (timeStr) => {
     if (!timeStr) return '';
