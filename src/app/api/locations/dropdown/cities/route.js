@@ -7,7 +7,7 @@ export async function GET(request) {
     }
     try {
         const locale = request.headers.get('accept-language') || 'en';
-        const targetUrl = `${backendUrl}/post/cities/`;
+        const targetUrl = `${backendUrl}/post/cities/dropdown/`;
         const res = await fetch(targetUrl, {
             method: "GET",
             headers: {

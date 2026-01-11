@@ -1,61 +1,60 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { use, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
-  MapPin, Calendar, Users, ArrowRight, Star, Globe, Info, 
-  Thermometer, Languages, Coins, ChevronRight 
+  MapPin, Star, Globe, Info, Thermometer, 
+  Languages, Coins, ChevronRight, AlertCircle 
 } from 'lucide-react';
 
-// --- 1. DUMMY DATA GENERATOR ---
-const getDummyCity = (locale = 'en') => {
+// Hooks & Components
+import { useCityById } from '@/hooks/useCities';
+import PropertyCard from '@/components/Shared/Card/Card'; // Adjust path as needed
+
+// --- 1. DATA NORMALIZATION LAYER ---
+// This ensures your UI never crashes even if the API sends null/missing fields
+const normalizeCityData = (apiData, locale) => {
+  if (!apiData) return null;
+
   const isFr = locale === 'fr';
 
   return {
-    id: "uuid-123",
-    name: "Touba",
-    slug: "touba",
-    country: { name: isFr ? "Sénégal" : "Senegal", code: "SN" },
-    featured_image: "https://images.unsplash.com/photo-1544237243-7bb2217cb099?q=80&w=1920&auto=format&fit=crop",
-    stats: { properties: 142, rating: 4.8, visitors: "12k+" },
-    description: isFr ? `
-      <p class="mb-4 text-lg leading-relaxed text-slate-600"><strong>Touba</strong> est bien plus qu'une ville ; c'est le cœur spirituel du Sénégal. Fondée en 1887 par Cheikh Ahmadou Bamba, elle est aujourd'hui l'une des villes les plus importantes et les plus visitées d'Afrique de l'Ouest.</p>
-      <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-blue-600 rounded-full inline-block"></span>Pourquoi visiter ?</h3>
-      <ul class="grid gap-3 mb-6">
-        <li class="flex gap-3 items-start"><span class="text-blue-500 mt-1">●</span> La Grande Mosquée de Touba, un chef-d'œuvre architectural.</li>
-        <li class="flex gap-3 items-start"><span class="text-blue-500 mt-1">●</span> L'atmosphère paisible et spirituelle unique.</li>
-        <li class="flex gap-3 items-start"><span class="text-blue-500 mt-1">●</span> Le Grand Magal, un pèlerinage annuel rassemblant des millions de fidèles.</li>
-      </ul>
-      <p class="text-slate-600 leading-relaxed">Que vous soyez en quête de spiritualité ou de découverte culturelle, Touba offre une expérience inoubliable avec ses marchés vibrants et son hospitalité légendaire.</p>
-    ` : `
-      <p class="mb-4 text-lg leading-relaxed text-slate-600"><strong>Touba</strong> is more than just a city; it is the spiritual heart of Senegal. Founded in 1887 by Cheikh Ahmadou Bamba, it is today one of the most significant and visited cities in West Africa.</p>
-      <h3 class="text-xl font-bold text-slate-900 mt-8 mb-4 flex items-center gap-2"><span class="w-1 h-6 bg-blue-600 rounded-full inline-block"></span>Why Visit?</h3>
-      <ul class="grid gap-3 mb-6">
-        <li class="flex gap-3 items-start"><span class="text-blue-500 mt-1">●</span> The Great Mosque of Touba, an architectural masterpiece.</li>
-        <li class="flex gap-3 items-start"><span class="text-blue-500 mt-1">●</span> The unique peaceful and spiritual atmosphere.</li>
-        <li class="flex gap-3 items-start"><span class="text-blue-500 mt-1">●</span> The Grand Magal, an annual pilgrimage gathering millions.</li>
-      </ul>
-      <p class="text-slate-600 leading-relaxed">Whether you are seeking spirituality or cultural discovery, Touba offers an unforgettable experience with its vibrant markets and legendary hospitality.</p>
-    `,
-    weather: { temp: 32, condition: isFr ? "Ensoleillé" : "Sunny" },
-    currency: "XOF (CFA)",
-    language: isFr ? "Wolof, Français" : "Wolof, French"
+    id: apiData.id,
+    name: apiData.name || "Unknown City",
+    country: { 
+      name: apiData.country || "Unknown Country", 
+      // If backend doesn't send code, fallback safely
+      code: "N/A" 
+    },
+    // Safe Image Handling (Backend URL vs Absolute URL)
+    featured_image: apiData.featured_image 
+      ? (apiData.featured_image.startsWith('http') 
+          ? apiData.featured_image 
+          : `${process.env.NEXT_PUBLIC_MEDIA_BASE_URL || ''}${apiData.featured_image}`)
+      : "/placeholder-city.jpg",
+    
+    // Stats (Use real length if available, else 0)
+    stats: { 
+      properties: apiData.properties?.length || 0, 
+      rating: 4.8, // Hardcoded if backend doesn't provide aggregate rating
+      visitors: "12k+" // Marketing placeholder
+    },
+    
+    // HTML Description (Sanitized in production usually, strictly mapped here)
+    description: apiData.description || (isFr ? "Aucune description disponible." : "No description available."),
+    
+    // Placeholders for data not yet in your API
+    weather: { temp: 30, condition: isFr ? "Ensoleillé" : "Sunny" },
+    currency: "USD",
+    language: isFr ? "Français" : "English",
+    
+    // The properties array for the grid
+    properties: Array.isArray(apiData.properties) ? apiData.properties : []
   };
 };
 
-const mockProperties = [
-  { id: 1, title: "Savanna Camp Touba", price: 85, rating: 4.8, reviews: 120, image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" },
-  { id: 2, title: "Hotel Al-Maktoum", price: 120, rating: 4.5, reviews: 85, image: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80" },
-  { id: 3, title: "Résidence Cheikh", price: 60, rating: 4.2, reviews: 45, image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80" },
-];
-
-const translations = {
-  en: { about: "About", places: "Popular Stays", view_all: "View All", from: "From", per_night: "/night", facts: "City Guide", currency: "Currency", language: "Language", weather: "Weather", book: "Book", map: "View on Map" },
-  fr: { about: "À propos de", places: "Séjours Populaires", view_all: "Tout voir", from: "Dès", per_night: "/nuit", facts: "Guide Ville", currency: "Devise", language: "Langue", weather: "Météo", book: "Réserver", map: "Voir la carte" }
-};
-
-// --- 2. COMPONENTS ---
+// --- 2. SUB-COMPONENTS ---
 
 const CityHeader = ({ city }) => (
   <div className="relative h-[60vh] min-h-[450px] w-full bg-slate-900 overflow-hidden">
@@ -65,6 +64,8 @@ const CityHeader = ({ city }) => (
       fill
       className="object-cover opacity-90"
       priority
+      // Fix for localhost development
+      unoptimized={process.env.NODE_ENV === 'development'}
     />
     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent" />
     
@@ -90,7 +91,7 @@ const CityHeader = ({ city }) => (
         </div>
         <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full text-white/90">
           <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-          <span className="text-sm font-medium">{city.stats.rating} ({city.stats.visitors})</span>
+          <span className="text-sm font-medium">{city.stats.rating}</span>
         </div>
       </div>
     </div>
@@ -109,41 +110,6 @@ const FactCard = ({ icon: Icon, label, value }) => (
   </div>
 );
 
-const PropertyCard = ({ prop, t }) => (
-  <Link href={`/properties/${prop.id}`} className="group block bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:shadow-slate-200/50 hover:border-slate-300 transition-all duration-300">
-    <div className="relative h-56 w-full overflow-hidden">
-      <Image 
-        src={prop.image} 
-        alt={prop.title} 
-        fill 
-        className="object-cover group-hover:scale-105 transition-transform duration-700" 
-      />
-      <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm shadow-sm rounded-full px-2.5 py-1 text-xs font-bold flex items-center gap-1 text-slate-800">
-        <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" /> {prop.rating}
-      </div>
-    </div>
-    <div className="p-5">
-      <h3 className="font-bold text-lg text-slate-900 mb-1 leading-snug group-hover:text-blue-600 transition-colors">
-        {prop.title}
-      </h3>
-      <p className="text-slate-500 text-xs mb-4">{prop.reviews} {t.reviews || "reviews"}</p>
-      
-      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-        <div>
-          <p className="text-xs text-slate-400 font-medium">{t.from}</p>
-          <div className="flex items-baseline gap-1">
-            <span className="text-xl font-bold text-slate-900">${prop.price}</span>
-            <span className="text-xs text-slate-500">{t.per_night}</span>
-          </div>
-        </div>
-        <span className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
-          <ArrowRight className="w-4 h-4" />
-        </span>
-      </div>
-    </div>
-  </Link>
-);
-
 const SkeletonPage = () => (
   <div className="min-h-screen bg-slate-50">
     <div className="h-[60vh] bg-slate-200 w-full animate-pulse" />
@@ -160,29 +126,48 @@ const SkeletonPage = () => (
   </div>
 );
 
-// --- 3. MAIN PAGE ---
+const ErrorState = ({ message }) => (
+    <div className="min-h-[50vh] flex flex-col items-center justify-center text-center px-4">
+        <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Could not load city</h2>
+        <p className="text-slate-500">{message}</p>
+        <Link href="/" className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700">
+            Go Home
+        </Link>
+    </div>
+);
+
+// --- 3. MAIN PAGE COMPONENT ---
 
 export default function CityDetailPage({ params }) {
-  const locale = params?.locale || 'en';
-  const t = translations[locale] || translations.en;
-  
-  const [city, setCity] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // 1. Unwrap params (Next.js 15)
+  // Assuming the route is [slug], but we treat it as an ID or Slug depending on API
+  const { slug, locale = 'en' } = use(params);
 
-  useEffect(() => {
-    const fetchCity = async () => {
-      setLoading(true);
-      // Simulate API delay
-      setTimeout(() => {
-        setCity(getDummyCity(locale));
-        setLoading(false);
-      }, 600);
-    };
-    fetchCity();
-  }, [locale]);
+  // 2. Fetch Data using React Query Hook
+  // We pass 'slug' (which might be the UUID if your URL is /city/uuid-123)
+  const { data: apiData, isLoading, isError, error } = useCityById(slug);
 
-  if (loading) return <SkeletonPage />;
-  if (!city) return null;
+  // 3. Optimize Data Processing
+  // useMemo prevents re-calculating the object on every render
+  const city = useMemo(() => normalizeCityData(apiData, locale), [apiData, locale]);
+
+  // 4. Loading & Error States
+  if (isLoading) return <SkeletonPage />;
+  if (isError) return <ErrorState message={error?.message || "Something went wrong"} />;
+  if (!city) return <ErrorState message="City not found" />;
+
+  // Translations Map (Simple version)
+  const t = {
+    about: locale === 'fr' ? "À propos de" : "About",
+    places: locale === 'fr' ? "Séjours Populaires" : "Popular Stays",
+    view_all: locale === 'fr' ? "Tout voir" : "View All",
+    facts: locale === 'fr' ? "Guide Ville" : "City Guide",
+    language: locale === 'fr' ? "Langue" : "Language",
+    currency: locale === 'fr' ? "Devise" : "Currency",
+    weather: locale === 'fr' ? "Météo" : "Weather",
+    map: locale === 'fr' ? "Voir la carte" : "View on Map",
+  };
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
@@ -214,24 +199,26 @@ export default function CityDetailPage({ params }) {
               <div className="flex items-end justify-between mb-6 px-1">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900">{t.places} {city.name}</h2>
-                  <p className="text-slate-500 text-sm mt-1">Highly rated by recent travelers</p>
+                  <p className="text-slate-500 text-sm mt-1">
+                    {city.stats.properties} properties available
+                  </p>
                 </div>
-                <Link href={`/search?city=${city.id}`} className="hidden sm:flex items-center gap-1.5 text-blue-600 text-sm font-semibold hover:text-blue-700 transition-colors">
-                  {t.view_all} <ArrowRight className="w-4 h-4" />
-                </Link>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {mockProperties.map((prop) => (
-                  <PropertyCard key={prop.id} prop={prop} t={t} />
-                ))}
-              </div>
-              
-              <div className="mt-6 sm:hidden">
-                <Link href={`/search?city=${city.id}`} className="flex w-full items-center justify-center gap-2 bg-white border border-slate-300 py-3 rounded-xl text-slate-700 font-semibold text-sm">
-                  {t.view_all}
-                </Link>
-              </div>
+              {city.properties.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {city.properties.map((prop) => (
+                      <div key={prop.id} className="h-[400px]">
+                         {/* INTEGRATION: Using the Reusable PropertyCard */}
+                         <PropertyCard data={prop} />
+                      </div>
+                    ))}
+                  </div>
+              ) : (
+                  <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-300">
+                      <p className="text-slate-500">No properties found in this city yet.</p>
+                  </div>
+              )}
             </div>
 
           </div>

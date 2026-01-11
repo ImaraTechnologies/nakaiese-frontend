@@ -1,8 +1,18 @@
 import localapi from "@/utils/local_api";
 
 export const getCities = async () => {
-    try{
-        const response = await localapi.get('locations/list/cities ');
+    try {
+        const response = await localapi.get('locations/dropdown/cities');
+        return response.data;
+    }
+    catch (error) {
+        console.error("Error fetching cities:", error);
+        throw error;
+    }
+};
+export const getCitiesList = async () => {
+    try {
+        const response = await localapi.get('locations/list/cities');
         return response.data;
     }
     catch (error) {
@@ -12,7 +22,7 @@ export const getCities = async () => {
 };
 
 export const getCityById = async (id) => {
-    try{
+    try {
         const response = await localapi.get(`locations/retreive/cities/?id=${id}`);
         return response.data;
     }
