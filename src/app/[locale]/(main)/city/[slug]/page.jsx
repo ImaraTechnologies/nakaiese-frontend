@@ -3,6 +3,7 @@
 import React, { use, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations, useLocale } from 'next-intl'; // 1. Import Hook
 import { 
   MapPin, Star, Globe, Info, Thermometer, 
   Languages, Coins, ChevronRight, AlertCircle 
@@ -10,46 +11,41 @@ import {
 
 // Hooks & Components
 import { useCityById } from '@/hooks/useCities';
-import PropertyCard from '@/components/Shared/Card/Card'; // Adjust path as needed
+import PropertyCard from '@/components/Shared/Card/Card';
 
 // --- 1. DATA NORMALIZATION LAYER ---
-// This ensures your UI never crashes even if the API sends null/missing fields
-const normalizeCityData = (apiData, locale) => {
+// Updated to be "Language Agnostic" - it just handles structure.
+// Text content (descriptions) comes from backend or falls back to null.
+const normalizeCityData = (apiData) => {
   if (!apiData) return null;
-
-  const isFr = locale === 'fr';
 
   return {
     id: apiData.id,
     name: apiData.name || "Unknown City",
     country: { 
       name: apiData.country || "Unknown Country", 
-      // If backend doesn't send code, fallback safely
       code: "N/A" 
     },
-    // Safe Image Handling (Backend URL vs Absolute URL)
+    // Safe Image Handling
     featured_image: apiData.featured_image 
       ? (apiData.featured_image.startsWith('http') 
           ? apiData.featured_image 
           : `${process.env.NEXT_PUBLIC_MEDIA_BASE_URL || ''}${apiData.featured_image}`)
       : "/placeholder-city.jpg",
     
-    // Stats (Use real length if available, else 0)
     stats: { 
       properties: apiData.properties?.length || 0, 
-      rating: 4.8, // Hardcoded if backend doesn't provide aggregate rating
-      visitors: "12k+" // Marketing placeholder
+      rating: 4.8, 
     },
     
-    // HTML Description (Sanitized in production usually, strictly mapped here)
-    description: apiData.description || (isFr ? "Aucune description disponible." : "No description available."),
+    // If backend sends description, use it. If not, return null (UI handles fallback)
+    description: apiData.description || null,
     
-    // Placeholders for data not yet in your API
-    weather: { temp: 30, condition: isFr ? "Ensoleillé" : "Sunny" },
+    // Mock Data placeholders (In real app, these come from API)
+    weather: { temp: 30, conditionKey: "sunny" }, // storing key, not text
     currency: "USD",
-    language: isFr ? "Français" : "English",
+    languageKey: "English", // storing raw value
     
-    // The properties array for the grid
     properties: Array.isArray(apiData.properties) ? apiData.properties : []
   };
 };
@@ -64,7 +60,6 @@ const CityHeader = ({ city }) => (
       fill
       className="object-cover opacity-90"
       priority
-      // Fix for localhost development
       unoptimized={process.env.NODE_ENV === 'development'}
     />
     <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/40 to-transparent" />
@@ -126,13 +121,13 @@ const SkeletonPage = () => (
   </div>
 );
 
-const ErrorState = ({ message }) => (
+const ErrorState = ({ message, t }) => (
     <div className="min-h-[50vh] flex flex-col items-center justify-center text-center px-4">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Could not load city</h2>
+        <h2 className="text-xl font-bold text-slate-900 mb-2">{t('errorTitle')}</h2>
         <p className="text-slate-500">{message}</p>
         <Link href="/" className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700">
-            Go Home
+            {t('goHome')}
         </Link>
     </div>
 );
@@ -140,34 +135,31 @@ const ErrorState = ({ message }) => (
 // --- 3. MAIN PAGE COMPONENT ---
 
 export default function CityDetailPage({ params }) {
-  // 1. Unwrap params (Next.js 15)
-  // Assuming the route is [slug], but we treat it as an ID or Slug depending on API
-  const { slug, locale = 'en' } = use(params);
+  // 1. Hook for Translation
+  const t = useTranslations('CityDetail');
+  const locale = useLocale();
 
-  // 2. Fetch Data using React Query Hook
-  // We pass 'slug' (which might be the UUID if your URL is /city/uuid-123)
-  const { data: apiData, isLoading, isError, error } = useCityById(slug);
+  // 2. Unwrap Params (Next.js 15)
+  const { slug } = use(params);
 
-  // 3. Optimize Data Processing
-  // useMemo prevents re-calculating the object on every render
-  const city = useMemo(() => normalizeCityData(apiData, locale), [apiData, locale]);
+  // 3. Fetch Data
+  const { data: apiData, isLoading, isError } = useCityById(slug);
 
-  // 4. Loading & Error States
+  // 4. Normalize Data
+  // We don't pass locale here because we want raw data structure.
+  // We handle translation in the JSX.
+  const city = useMemo(() => normalizeCityData(apiData), [apiData]);
+
   if (isLoading) return <SkeletonPage />;
-  if (isError) return <ErrorState message={error?.message || "Something went wrong"} />;
-  if (!city) return <ErrorState message="City not found" />;
+  
+  if (isError) return <ErrorState message={t('errorTitle')} t={t} />;
+  
+  if (!city) return <ErrorState message={t('errorNotFound')} t={t} />;
 
-  // Translations Map (Simple version)
-  const t = {
-    about: locale === 'fr' ? "À propos de" : "About",
-    places: locale === 'fr' ? "Séjours Populaires" : "Popular Stays",
-    view_all: locale === 'fr' ? "Tout voir" : "View All",
-    facts: locale === 'fr' ? "Guide Ville" : "City Guide",
-    language: locale === 'fr' ? "Langue" : "Language",
-    currency: locale === 'fr' ? "Devise" : "Currency",
-    weather: locale === 'fr' ? "Météo" : "Weather",
-    map: locale === 'fr' ? "Voir la carte" : "View on Map",
-  };
+  // 5. Dynamic Values for Fact Cards
+  // In a real app, 'city.weather.conditionKey' would map to a translation key like 'sunny'
+  // and 'city.languageKey' would be the raw data we translate.
+  const weatherCondition = t(city.weather.conditionKey) || city.weather.conditionKey;
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-20">
@@ -186,21 +178,31 @@ export default function CityDetailPage({ params }) {
                 <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
                   <Info className="w-5 h-5" />
                 </div>
-                <h2 className="text-2xl font-bold text-slate-900">{t.about} {city.name}</h2>
+                <h2 className="text-2xl font-bold text-slate-900">
+                    {t('about')} {city.name}
+                </h2>
               </div>
-              <div 
-                className="prose prose-slate prose-headings:font-bold prose-p:text-slate-600 prose-li:text-slate-600 max-w-none"
-                dangerouslySetInnerHTML={{ __html: city.description }} 
-              />
+              
+              {city.description ? (
+                  <div 
+                    className="prose prose-slate prose-headings:font-bold prose-p:text-slate-600 prose-li:text-slate-600 max-w-none"
+                    dangerouslySetInnerHTML={{ __html: city.description }} 
+                  />
+              ) : (
+                  <p className="text-slate-500 italic">{t('noDescription')}</p>
+              )}
             </div>
 
             {/* Properties Grid */}
             <div id="stays">
               <div className="flex items-end justify-between mb-6 px-1">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900">{t.places} {city.name}</h2>
+                  <h2 className="text-2xl font-bold text-slate-900">
+                      {t('popularStays')} {city.name}
+                  </h2>
                   <p className="text-slate-500 text-sm mt-1">
-                    {city.stats.properties} properties available
+                    {/* Using next-intl interpolation for numbers */}
+                    {t('propertiesAvailable', { count: city.stats.properties })}
                   </p>
                 </div>
               </div>
@@ -209,14 +211,13 @@ export default function CityDetailPage({ params }) {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {city.properties.map((prop) => (
                       <div key={prop.id} className="h-[400px]">
-                         {/* INTEGRATION: Using the Reusable PropertyCard */}
                          <PropertyCard data={prop} />
                       </div>
                     ))}
                   </div>
               ) : (
                   <div className="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-300">
-                      <p className="text-slate-500">No properties found in this city yet.</p>
+                      <p className="text-slate-500">{t('noProperties')}</p>
                   </div>
               )}
             </div>
@@ -228,13 +229,13 @@ export default function CityDetailPage({ params }) {
             <div className="bg-white rounded-3xl shadow-lg shadow-slate-200/50 p-6 sticky top-24 border border-slate-100">
               <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-blue-600" />
-                {t.facts}
+                {t('cityGuide')}
               </h3>
               
               <div className="space-y-3">
-                <FactCard icon={Languages} label={t.language} value={city.language} />
-                <FactCard icon={Coins} label={t.currency} value={city.currency} />
-                <FactCard icon={Thermometer} label={t.weather} value={`${city.weather.temp}°C • ${city.weather.condition}`} />
+                <FactCard icon={Languages} label={t('language')} value={city.languageKey} />
+                <FactCard icon={Coins} label={t('currency')} value={city.currency} />
+                <FactCard icon={Thermometer} label={t('weather')} value={`${city.weather.temp}°C • ${weatherCondition}`} />
               </div>
 
               {/* Map Widget */}
@@ -245,7 +246,7 @@ export default function CityDetailPage({ params }) {
                   <div className="absolute inset-0 flex items-center justify-center">
                     <button className="bg-white/90 backdrop-blur text-slate-900 px-5 py-2.5 rounded-full text-sm font-bold shadow-lg flex items-center gap-2 group-hover:scale-105 transition-all">
                       <MapPin className="w-4 h-4 text-blue-600" />
-                      {t.map}
+                      {t('viewMap')}
                     </button>
                   </div>
                 </div>

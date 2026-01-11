@@ -634,6 +634,24 @@
     "pay_mobile_sub": "Wave, Orange Money, Free Money",
     "no_payment_methods": "Aucun moyen de paiement configuré pour cet établissement."
   },
+  "CityDetail": {
+    "about": "À propos de",
+    "popularStays": "Séjours Populaires",
+    "viewAll": "Tout voir",
+    "cityGuide": "Guide Ville",
+    "language": "Langue",
+    "currency": "Devise",
+    "weather": "Météo",
+    "viewMap": "Voir la carte",
+    "propertiesAvailable": "{count} propriétés disponibles",
+    "noProperties": "Aucune propriété trouvée pour cette ville.",
+    "noDescription": "Aucune description disponible pour cette ville.",
+    "errorTitle": "Impossible de charger la ville",
+    "errorNotFound": "Ville introuvable",
+    "goHome": "Retour à l'accueil",
+    "sunny": "Ensoleillé",
+    "unknown": "Inconnu"
+  },
   "BookingSuccess": {
     "loading": "Finalisation de votre réservation...",
     "not_found_title": "Réservation introuvable",

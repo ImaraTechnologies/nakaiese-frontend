@@ -634,6 +634,25 @@
     "pay_mobile_sub": "Wave, Orange Money, Free Money",
     "no_payment_methods": "No payment methods configured for this property."
   },
+
+  "CityDetail": {
+    "about": "About",
+    "popularStays": "Popular Stays",
+    "viewAll": "View All",
+    "cityGuide": "City Guide",
+    "language": "Language",
+    "currency": "Currency",
+    "weather": "Weather",
+    "viewMap": "View on Map",
+    "propertiesAvailable": "{count} properties available",
+    "noProperties": "No properties found in this city yet.",
+    "noDescription": "No description available for this city.",
+    "errorTitle": "Could not load city",
+    "errorNotFound": "City not found",
+    "goHome": "Go Home",
+    "sunny": "Sunny",
+    "unknown": "Unknown"
+  },
   "BookingSuccess": {
     "loading": "Finalizing your booking...",
     "not_found_title": "Booking Not Found",
