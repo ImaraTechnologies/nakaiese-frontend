@@ -22,8 +22,6 @@ export default function PropertyDetailsPage() {
   const searchParams = useSearchParams();
   const searchParamsString = searchParams.toString();
 
-  const [selectedSeating, setSelectedSeating] = useState(null);
-
   // 1. Fetch Property Data
   const { data: property, isLoading, error } = useProperty(params.slug);
 
@@ -35,7 +33,7 @@ export default function PropertyDetailsPage() {
 
   const defaultItems = property ? (isHotel ? property.room_types : property.tables) : [];
   const displayedItems = filteredItems || defaultItems;
-  
+
   // Calculate filter status based on whether filteredItems exists
   const isFiltered = filteredItems !== null;
 
@@ -45,9 +43,9 @@ export default function PropertyDetailsPage() {
     if (!availableData) return;
 
     // Depending on your API response structure, extract the array
-    const items = Array.isArray(availableData) 
-        ? availableData 
-        : (availableData.rooms || availableData.tables || []);
+    const items = Array.isArray(availableData)
+      ? availableData
+      : (availableData.rooms || availableData.tables || []);
 
     // Update the override state
     setFilteredItems(items);
@@ -74,7 +72,7 @@ export default function PropertyDetailsPage() {
 
         {/* LEFT COLUMN: Main Content */}
         <div className="lg:col-span-2 space-y-10">
-          
+
           {/* Header */}
           <div className="space-y-4">
             <div className="flex justify-between items-start">
@@ -112,7 +110,7 @@ export default function PropertyDetailsPage() {
           <section>
             <h2 className="text-2xl font-bold text-slate-900 mb-6">{isHotel ? t('aboutStay') : t('aboutPlace')}</h2>
             <p className="leading-relaxed text-lg text-slate-600 mb-8">{property.description}</p>
-            
+
             <h3 className="font-semibold text-slate-900 mb-4">{t('amenities')}</h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-4">
               {property.amenities?.map((amenity, idx) => (
@@ -127,18 +125,18 @@ export default function PropertyDetailsPage() {
           </section>
 
           {!isHotel && property.menus && property.menus.length > 0 && (
-             <RestaurantMenu menus={property.menus} t={t} />
+            <RestaurantMenu menus={property.menus} t={t} />
           )}
 
           {/* DYNAMIC ROOM/TABLE LIST */}
           <section id="inventory-list" className="pt-8 border-t border-slate-200 scroll-mt-28">
-           
+
 
             {isHotel ? (
-              
+
               <RoomList rooms={displayedItems} propertyId={property.id} t={t} searchParamsString={searchParamsString} />
             ) : (
-              <SeatingOptions tables={displayedItems} propertyId={property.id} searchParamsString={searchParamsString} t={t} isFiltered={isFiltered} onSelect={(type) => setSelectedSeating(type)} />
+              <SeatingOptions tables={displayedItems} propertyId={property.id} searchParamsString={searchParamsString} t={t} isFiltered={isFiltered} />
             )}
           </section>
 
@@ -160,10 +158,10 @@ export default function PropertyDetailsPage() {
 
         {/* RIGHT COLUMN: Booking Sidebar */}
         <div className="relative">
-          <BookingSidebar 
-            property={property} 
-            isHotel={isHotel} 
-            t={t} 
+          <BookingSidebar
+            property={property}
+            isHotel={isHotel}
+            t={t}
             searchParamsString={searchParamsString}
             onAvailabilityFound={handleAvailabilityUpdate}
           />

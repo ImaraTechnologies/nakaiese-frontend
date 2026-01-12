@@ -1,4 +1,20 @@
 {
+  "Metadata": {
+    "Home": {
+      "title": "Nakiese | Best Hotels & Restaurants in Africa",
+      "description": "Book luxury stays and dining experiences..."
+    },
+    "Hotels": {
+      "title": "Luxury Hotels & Resorts | Nakiese",
+      "description": "Find and book the best hotels in Africa. From city center luxury to safari lodges, best rates guaranteed.",
+      "hotels_in": "Hotels in" 
+    },
+    "Restaurants": {
+      "title": "Top Rated Restaurants & Dining | Nakiese",
+      "description": "Discover the best restaurants in Africa. Book tables at top-rated dining spots, from local cuisine to fine dining.",
+      "restaurants_in": "Restaurants in"
+    }
+  },
   "HomePage": {
     "Navbar": {
       "home": "Home",
@@ -8,8 +24,7 @@
       "profile": "Profile",
       "bookings": "My Bookings",
       "logout": "Logout",
-      "wishlist": "Wishlist",
-      "cart": "Cart"
+      "wishlist": "Wishlist"
     },
     "Hero": {
       "title": "Find your next stay",
@@ -634,7 +649,6 @@
     "pay_mobile_sub": "Wave, Orange Money, Free Money",
     "no_payment_methods": "No payment methods configured for this property."
   },
-
   "CityDetail": {
     "about": "About",
     "popularStays": "Popular Stays",
