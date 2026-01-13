@@ -1,14 +1,7 @@
 'use client';
 import React from 'react';
-import { Wifi, Waves, Utensils, Sparkles, Car, Check, Star } from 'lucide-react';
-
-const BACKEND_AMENITIES = [
-  { label: 'Free WiFi', value: 'Free WiFi', icon: Wifi },
-  { label: 'Swimming pool', value: 'Swimming pool', icon: Waves },
-  { label: 'Restaurant', value: 'Restaurant', icon: Utensils },
-  { label: 'Spa', value: 'Spa', icon: Sparkles },
-  { label: 'Airport shuttle', value: 'Airport shuttle', icon: Car },
-];
+import {HOTEL_BACKEND_AMENITIES as BACKEND_AMENITIES} from '@/constants/filters';
+import { Check, Star } from 'lucide-react';
 
 export default function FilterSection({ t }) {
   return (

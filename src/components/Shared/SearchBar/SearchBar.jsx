@@ -57,7 +57,7 @@ const SearchBar = () => {
   } = useSearchBarLogic();
 
   return (
-    <div className={`w-full max-w-[1140px] relative font-sans text-gray-800 z-50`}>
+    <div className={`w-full max-w-[1140px] relative font-sans text-gray-800 `}>
 
       {/* --- TABS --- */}
       <div className="flex gap-2 mb-2 ml-1">
@@ -70,7 +70,7 @@ const SearchBar = () => {
       </div>
 
       {/* --- SEARCH CONTAINER --- */}
-      <div className="bg-[#febb02] p-1 rounded-md shadow-lg relative z-50">
+      <div className="bg-[#febb02] p-1 rounded-md shadow-lg relative">
         <div className="grid grid-cols-12 lg:flex lg:flex-row gap-1 lg:h-[64px]">
 
           {/* --- LOCATION --- */}

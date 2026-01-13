@@ -13,6 +13,40 @@
       "title": "Top Rated Restaurants & Dining | Nakiese",
       "description": "Discover the best restaurants in Africa. Book tables at top-rated dining spots, from local cuisine to fine dining.",
       "restaurants_in": "Restaurants in"
+    },
+    "Wishlist": {
+      "title": "My Wishlist | Nakiese",
+      "description": "View your saved hotels and restaurants."
+    },
+    "About": {
+      "title": "About Us | Nakiese - Connecting You to Africa",
+      "description": "Learn about Nakiese's mission to simplify travel in Africa. Meet our team and discover our commitment to verified stays and dining."
+    },
+    "Booking": {
+      "title": "Secure Checkout | Nakiese",
+      "description": "Complete your reservation securely."
+    },
+    "BookingSuccess": {
+      "title": "Booking Confirmed - Nakiese"
+    },
+    "CityDetail": {
+    "errorTitle": "Something went wrong",
+    "errorNotFound": "City not found",
+    "goHome": "Go Home",
+    "about": "About",
+    "noDescription": "No description available for this city.",
+    "popularStays": "Popular stays in",
+    "propertiesAvailable": "{count} properties available",
+    "noProperties": "No properties found in this city yet.",
+    "cityGuide": "City Guide",
+    "language": "Language",
+    "currency": "Currency",
+    "weather": "Weather",
+    "viewMap": "View on Map"
+  },
+  "Contact": {
+      "title": "Contact Us | Nakiese Support",
+      "description": "Have questions? Contact the Nakiese team for support with bookings, account issues, or partnerships. We are here to help 24/7."
     }
   },
   "HomePage": {
