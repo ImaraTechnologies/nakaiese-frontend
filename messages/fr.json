@@ -1,4 +1,54 @@
 {
+  "Metadata": {
+    "Home": {
+      "title": "Nakiese | Meilleurs Hôtels & Restaurants en Afrique",
+      "description": "Réservez des séjours de luxe et des expériences culinaires uniques à travers l'Afrique."
+    },
+    "Hotels": {
+      "title": "Hôtels et Complexes de Luxe | Nakiese",
+      "description": "Trouvez et réservez les meilleurs hôtels en Afrique. Du luxe en centre-ville aux lodges de safari, meilleurs tarifs garantis.",
+      "hotels_in": "Hôtels à"
+    },
+    "Restaurants": {
+      "title": "Restaurants et Dîners les Mieux Notés | Nakiese",
+      "description": "Découvrez les meilleurs restaurants d'Afrique. Réservez une table dans les lieux les mieux notés, de la cuisine locale à la haute gastronomie.",
+      "restaurants_in": "Restaurants à"
+    },
+    "Wishlist": {
+      "title": "Ma Liste d'Envies | Nakiese",
+      "description": "Consultez vos hôtels et restaurants enregistrés."
+    },
+    "About": {
+      "title": "À Propos | Nakiese - Votre Lien avec l'Afrique",
+      "description": "Découvrez la mission de Nakiese : simplifier les voyages en Afrique. Rencontrez notre équipe et découvrez notre engagement pour des séjours et repas vérifiés."
+    },
+    "Booking": {
+      "title": "Paiement Sécurisé | Nakiese",
+      "description": "Finalisez votre réservation en toute sécurité."
+    },
+    "BookingSuccess": {
+      "title": "Réservation Confirmée - Nakiese"
+    },
+    "CityDetail": {
+      "errorTitle": "Une erreur est survenue",
+      "errorNotFound": "Ville introuvable",
+      "goHome": "Retour à l'accueil",
+      "about": "À propos de",
+      "noDescription": "Aucune description disponible pour cette ville.",
+      "popularStays": "Séjours populaires à",
+      "propertiesAvailable": "{count} établissements disponibles",
+      "noProperties": "Aucun établissement trouvé dans cette ville pour le moment.",
+      "cityGuide": "Guide de la Ville",
+      "language": "Langue",
+      "currency": "Devise",
+      "weather": "Météo",
+      "viewMap": "Voir sur la carte"
+    },
+    "Contact": {
+      "title": "Contactez-nous | Support Nakiese",
+      "description": "Des questions ? Contactez l'équipe Nakiese pour obtenir de l'aide concernant les réservations, les problèmes de compte ou les partenariats. Nous sommes là pour vous aider 24/7."
+    }
+  },
   "HomePage": {
     "Navbar": {
       "home": "Accueil",

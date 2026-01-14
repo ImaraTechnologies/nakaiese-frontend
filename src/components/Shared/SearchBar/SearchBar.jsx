@@ -8,6 +8,7 @@ import {
 import { format } from "date-fns";
 import { useTranslations } from 'next-intl';
 import { useSearchBarLogic } from "@/hooks/useSearchBar"; // Import the logic hook
+import { Search } from "lucide-react";
 
 // --- Helper UI Component ---
 const GuestCounter = ({ label, subLabel, value, onUpdate, min = 0 }) => (
@@ -61,16 +62,16 @@ const SearchBar = () => {
 
       {/* --- TABS --- */}
       <div className="flex gap-2 mb-2 ml-1">
-        <button onClick={() => setServiceType('hotels')} className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all ${serviceType === 'hotels' ? 'bg-[#febb02] text-black shadow-md' : 'bg-white/80 text-gray-700 hover:bg-white backdrop-blur-md'}`}>
+        <button onClick={() => setServiceType('hotels')} className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all ${serviceType === 'hotels' ? 'bg-[#216ba5] text-white shadow-md' : 'bg-white/80 text-gray-700 hover:bg-white backdrop-blur-md'}`}>
           <FaBed /> {t('hotels')}
         </button>
-        <button onClick={() => setServiceType('restaurants')} className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all ${serviceType === 'restaurants' ? 'bg-[#febb02] text-black shadow-md' : 'bg-white/80 text-gray-700 hover:bg-white backdrop-blur-md'}`}>
+        <button onClick={() => setServiceType('restaurants')} className={`flex items-center gap-2 px-6 py-2 rounded-full text-sm font-bold transition-all ${serviceType === 'restaurants' ? 'bg-[#216ba5] text-white shadow-md' : 'bg-white/80 text-gray-700 hover:bg-white backdrop-blur-md'}`}>
           <FaUtensils /> {t('restaurants')}
         </button>
       </div>
 
       {/* --- SEARCH CONTAINER --- */}
-      <div className="bg-[#febb02] p-1 rounded-md shadow-lg relative">
+      <div className="bg-[#216ba5] p-1 rounded-md shadow-lg relative">
         <div className="grid grid-cols-12 lg:flex lg:flex-row gap-1 lg:h-[64px]">
 
           {/* --- LOCATION --- */}
@@ -228,7 +229,9 @@ const SearchBar = () => {
 
           {/* Search Button */}
           <div className="col-span-12 lg:w-auto">
-            <button onClick={onSearchClick} className="bg-[#003b95] text-white font-bold h-full w-full px-8 py-3 rounded shadow-sm hover:bg-[#00224f] transition">
+            <button onClick={onSearchClick} className="bg-[#003b95] flex justify-center items-center gap-x-2 text-white font-bold h-full w-full px-8 py-3 rounded shadow-sm hover:bg-[#00224f] transition">
+
+              <span><Search width={15} height={15}/></span>
               {t('search')}
             </button>
           </div>

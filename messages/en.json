@@ -7,7 +7,7 @@
     "Hotels": {
       "title": "Luxury Hotels & Resorts | Nakiese",
       "description": "Find and book the best hotels in Africa. From city center luxury to safari lodges, best rates guaranteed.",
-      "hotels_in": "Hotels in" 
+      "hotels_in": "Hotels in"
     },
     "Restaurants": {
       "title": "Top Rated Restaurants & Dining | Nakiese",
@@ -30,21 +30,21 @@
       "title": "Booking Confirmed - Nakiese"
     },
     "CityDetail": {
-    "errorTitle": "Something went wrong",
-    "errorNotFound": "City not found",
-    "goHome": "Go Home",
-    "about": "About",
-    "noDescription": "No description available for this city.",
-    "popularStays": "Popular stays in",
-    "propertiesAvailable": "{count} properties available",
-    "noProperties": "No properties found in this city yet.",
-    "cityGuide": "City Guide",
-    "language": "Language",
-    "currency": "Currency",
-    "weather": "Weather",
-    "viewMap": "View on Map"
-  },
-  "Contact": {
+      "errorTitle": "Something went wrong",
+      "errorNotFound": "City not found",
+      "goHome": "Go Home",
+      "about": "About",
+      "noDescription": "No description available for this city.",
+      "popularStays": "Popular stays in",
+      "propertiesAvailable": "{count} properties available",
+      "noProperties": "No properties found in this city yet.",
+      "cityGuide": "City Guide",
+      "language": "Language",
+      "currency": "Currency",
+      "weather": "Weather",
+      "viewMap": "View on Map"
+    },
+    "Contact": {
       "title": "Contact Us | Nakiese Support",
       "description": "Have questions? Contact the Nakiese team for support with bookings, account issues, or partnerships. We are here to help 24/7."
     }
