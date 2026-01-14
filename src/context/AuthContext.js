@@ -106,6 +106,8 @@ export const AuthProvider = ({ children, initialUser }) => {
         }
     });
 
+    
+
     const isLoading = loginMutation.isPending || registerMutation.isPending || logoutMutation.isPending;
 
     return (
