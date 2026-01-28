@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getDashboardBookings, getDashboardBookingStats, getDashboardMetrics } from "@/services/dashboardServices";
+import { getDashboardBookings, getDashboardBookingStats, getDashboardMetrics, getDashboardProperties, getDashboardPropertyStats } from "@/services/dashboardServices";
 
 
 export const useDashboardMetrics = () => {
@@ -31,6 +31,29 @@ export const useDashboardBookingStats = () => {
     return useQuery({
         queryKey: ['dashboardBookingStats'],
         queryFn: async () => getDashboardBookingStats(),
+        // Production Grade Options:
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        gcTime: 1000 * 60 * 10, // 10 minutes
+        refetchOnWindowFocus: false, // Prevent unnecessary refetches when user tabs out/in
+        retry: 2, // Retry failed requests twice before throwing error
+    });
+};
+export const useDashboardProperties = (queryParams) => {
+    return useQuery({
+        queryKey: ['dashboardProperties', queryParams],   
+        queryFn: async () => getDashboardProperties(queryParams),
+        // Production Grade Options:
+        staleTime: 1000 * 60 * 2, // 2 minutes
+        gcTime: 1000 * 60 * 5, // 5 minutes
+        refetchOnWindowFocus: false, // Prevent unnecessary refetches when user tabs out/in
+        retry: 2, // Retry failed requests twice before throwing error
+    });
+};
+
+export const useDashboardPropertyStats = () => {
+    return useQuery({
+        queryKey: ['dashboardPropertyStats'],
+        queryFn: async () => getDashboardPropertyStats(),
         // Production Grade Options:
         staleTime: 1000 * 60 * 5, // 5 minutes
         gcTime: 1000 * 60 * 10, // 10 minutes

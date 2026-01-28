@@ -31,3 +31,26 @@ export const getDashboardBookingStats = async () => {
     throw error;
   }
 }
+
+export const getDashboardProperties = async (queryParams) => {
+  try {
+    const response = await localapi.get("/dashboard/properties", {
+      params: queryParams
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching dashboard properties:", error);
+    throw error;
+  }
+}
+
+export const getDashboardPropertyStats = async () => {
+  try {
+    const response = await localapi.get("/dashboard/properties/stats");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching dashboard property stats:", error);
+    throw error;
+  }
+}
+
