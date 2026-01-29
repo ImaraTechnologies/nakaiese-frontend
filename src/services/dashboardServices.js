@@ -54,3 +54,25 @@ export const getDashboardPropertyStats = async () => {
   }
 }
 
+export const getDashboardCustomers = async (queryParams) => {
+  try {
+    const response = await localapi.get("/dashboard/customers", {
+      params: queryParams
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching dashboard customers:", error);
+    throw error;
+  }
+}
+
+export const getDashboardCustomerStats = async () => {
+  try {
+    const response = await localapi.get("/dashboard/customers/stats");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching dashboard customer stats:", error);
+    throw error;
+  }
+}
+

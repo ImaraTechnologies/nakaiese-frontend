@@ -1,112 +1,74 @@
 'use client';
 
-import React, { useState } from 'react';
-import { 
-  Search, 
-  Filter, 
-  MoreVertical, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  Star, 
-  ShieldAlert, 
-  CheckCircle,
+import React, { useEffect, useState } from 'react';
+import {
+  Search,
+  Filter,
+  MoreVertical,
+  Mail,
+  Phone,
   UserPlus,
-  Download
+  Download,
+  Loader2,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
+import CustomerStats from '@/components/Shared/Dashboard/CustomerStats';
+import { useDashboardCustomers } from '@/hooks/useDashboard';
 
-// --- MOCK DATA ---
-const mockGuests = [
-  {
-    id: "GST-8812",
-    name: "Amadou Diallo",
-    email: "amadou.d@example.com",
-    phone: "+221 77 123 45 67",
-    totalSpend: 2450.00,
-    bookings: 12,
-    lastVisit: "Dec 24, 2024",
-    status: "VIP",
-    country: "Senegal"
-  },
-  {
-    id: "GST-9921",
-    name: "Sarah Jenkins",
-    email: "sarah.j@example.com",
-    phone: "+1 555 019 2834",
-    totalSpend: 850.00,
-    bookings: 3,
-    lastVisit: "Nov 12, 2024",
-    status: "Active",
-    country: "USA"
-  },
-  {
-    id: "GST-1102",
-    name: "Kwame Nkrumah",
-    email: "kwame@example.com",
-    phone: "+233 20 998 1122",
-    totalSpend: 120.00,
-    bookings: 1,
-    lastVisit: "Jan 05, 2025",
-    status: "New",
-    country: "Ghana"
-  },
-  {
-    id: "GST-3321",
-    name: "John Doe",
-    email: "j.doe@example.com",
-    phone: "+44 7700 900077",
-    totalSpend: 0.00,
-    bookings: 0,
-    lastVisit: "Never",
-    status: "Blocked",
-    country: "UK"
-  }
-];
+// --- SUB-COMPONENTS ---
 
-// --- COMPONENTS ---
+const GuestStatusBadge = ({ bookings }) => {
+  // Since the server doesn't provide a 'status' string, 
+  // we derive it from business logic (e.g., bookings count)
+  const isVIP = bookings > 5;
+  const isNew = bookings === 0;
 
-const GuestStatusBadge = ({ status }) => {
-  const styles = {
-    VIP: "bg-purple-100 text-purple-700 border-purple-200",
-    Active: "bg-green-50 text-green-700 border-green-200",
-    New: "bg-blue-50 text-blue-700 border-blue-200",
-    Blocked: "bg-red-50 text-red-700 border-red-200",
-  };
-
-  const icons = {
-    VIP: Star,
-    Active: CheckCircle,
-    New: UserPlus,
-    Blocked: ShieldAlert
-  };
-
-  const Icon = icons[status] || CheckCircle;
-
+  if (isVIP) return (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border bg-purple-100 text-purple-700 border-purple-200">
+      VIP
+    </span>
+  );
+  if (isNew) return (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border bg-blue-50 text-blue-700 border-blue-200">
+      New
+    </span>
+  );
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${styles[status]}`}>
-      <Icon className="w-3 h-3" />
-      {status}
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border bg-green-50 text-green-700 border-green-200">
+      Active
     </span>
   );
 };
 
 export default function GuestsPage() {
-  const [activeTab, setActiveTab] = useState('all');
+  const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // Filter Logic
-  const filteredGuests = mockGuests.filter((guest) => {
-    const matchesTab = activeTab === 'all' || guest.status.toLowerCase() === activeTab;
-    const matchesSearch = 
-      guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      guest.email.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    return matchesTab && matchesSearch;
+  // 1. Handle Debounced Search to prevent API spam
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1); 
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // 2. Hook Integration
+  const { data, isLoading, isError } = useDashboardCustomers({
+    page,
+    page_size: 10,
+    search: debouncedSearch || undefined,
   });
+
+  const guests = data?.results || [];
+  const totalCount = data?.count || 0;
+  const hasNext = !!data?.next;
+  const hasPrev = !!data?.previous;
 
   return (
     <div className="space-y-6">
-      
       {/* --- HEADER --- */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -115,90 +77,45 @@ export default function GuestsPage() {
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-sm">
-            <Download className="w-4 h-4" />
-            Export
+            <Download className="w-4 h-4" /> Export
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-sm shadow-blue-200 transition-all active:scale-95">
-            <UserPlus className="w-4 h-4" />
-            Add Guest
+          <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 shadow-sm transition-all active:scale-95">
+            <UserPlus className="w-4 h-4" /> Add Guest
           </button>
         </div>
       </div>
 
-      {/* --- STATS CARDS --- */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Total Guests</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">5,210</span>
-            <span className="text-xs font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded-md">+12%</span>
-          </div>
-        </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">VIP Members</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">142</span>
-            <span className="text-xs font-medium text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded-md">Top Tier</span>
-          </div>
-        </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Returning Rate</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">48%</span>
-            <span className="text-xs font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-md">High</span>
-          </div>
-        </div>
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Avg. Spend</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">$320</span>
-            <span className="text-xs font-medium text-slate-500">per stay</span>
-          </div>
-        </div>
-      </div>
+      <CustomerStats />
 
       {/* --- MAIN TABLE CARD --- */}
       <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
         
         {/* Toolbar */}
         <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50">
-          
-          {/* Tabs */}
-          <div className="flex p-1 bg-slate-100 rounded-lg w-full sm:w-auto">
-            {['all', 'vip', 'active', 'blocked'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`
-                  px-4 py-1.5 rounded-md text-sm font-medium capitalize transition-all flex-1 sm:flex-none
-                  ${activeTab === tab ? 'bg-white text-slate-900 shadow-sm ring-1 ring-black/5' : 'text-slate-500 hover:text-slate-700'}
-                `}
-              >
-                {tab}
-              </button>
-            ))}
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+            />
           </div>
-
-          {/* Search & Filter */}
-          <div className="flex gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:w-64">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Search guests..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-              />
-            </div>
-            <button className="p-2 bg-white border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50">
-              <Filter className="w-4 h-4" />
-            </button>
-          </div>
+          <button className="p-2 bg-white border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50">
+            <Filter className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* Table Content */}
+        <div className="overflow-x-auto relative min-h-[400px]">
+          {/* Loading Overlay */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+            </div>
+          )}
+
           <table className="w-full text-left text-sm">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase text-xs tracking-wider">
               <tr>
@@ -211,82 +128,84 @@ export default function GuestsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredGuests.length > 0 ? (
-                filteredGuests.map((guest) => (
+              {isError ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-12 text-center text-red-500">
+                    Error loading guests. Please refresh the page.
+                  </td>
+                </tr>
+              ) : guests.length > 0 ? (
+                guests.map((guest) => (
                   <tr key={guest.id} className="hover:bg-slate-50/80 transition-colors group">
-                    
-                    {/* Guest Profile */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold border border-slate-200">
-                          {guest.name.charAt(0)}
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100">
+                          {guest.guest_name.charAt(0)}
                         </div>
-                        <div>
-                          <p className="font-bold text-slate-900">{guest.name}</p>
-                          <p className="text-xs text-slate-500">From {guest.country}</p>
+                        <p className="font-bold text-slate-900">{guest.guest_name}</p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-slate-600 text-xs">
+                          <Mail className="w-3 h-3" /> {guest.email}
+                        </div>
+                        <div className="flex items-center gap-2 text-slate-600 text-xs">
+                          <Phone className="w-3 h-3" /> {guest.phone_number}
                         </div>
                       </div>
                     </td>
-
-                    {/* Contact Info */}
                     <td className="px-6 py-4">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 text-slate-600 text-xs">
-                          <Mail className="w-3 h-3 text-slate-400" />
-                          {guest.email}
-                        </div>
-                        <div className="flex items-center gap-2 text-slate-600 text-xs">
-                          <Phone className="w-3 h-3 text-slate-400" />
-                          {guest.phone}
-                        </div>
-                      </div>
+                      <GuestStatusBadge bookings={guest.total_bookings} />
                     </td>
-
-                    {/* Status */}
-                    <td className="px-6 py-4">
-                      <GuestStatusBadge status={guest.status} />
+                    <td className="px-6 py-4 text-right font-medium text-slate-900">
+                      {guest.total_bookings}
                     </td>
-
-                    {/* Stats: Bookings */}
+                    <td className="px-6 py-4 text-right font-bold text-slate-900">
+                      ${guest.total_spent.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </td>
                     <td className="px-6 py-4 text-right">
-                      <p className="font-medium text-slate-900">{guest.bookings}</p>
-                      <p className="text-[10px] text-slate-400">Last: {guest.lastVisit}</p>
-                    </td>
-
-                    {/* Stats: Money */}
-                    <td className="px-6 py-4 text-right">
-                      <span className="font-bold text-slate-900">${guest.totalSpend.toLocaleString()}</span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="px-6 py-4 text-right">
-                      <button className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
+                      <button className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg">
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </td>
                   </tr>
                 ))
               ) : (
-                <tr>
-                  <td colSpan="6" className="px-6 py-16 text-center text-slate-500">
-                    <p className="font-medium">No guests found</p>
-                    <p className="text-xs mt-1">Try adjusting your filters</p>
-                  </td>
-                </tr>
+                !isLoading && (
+                  <tr>
+                    <td colSpan="6" className="px-6 py-16 text-center text-slate-500">
+                      No guests found.
+                    </td>
+                  </tr>
+                )
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Footer */}
+        {/* --- PAGINATION FOOTER --- */}
         <div className="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
-          <span>Showing {filteredGuests.length} guests</span>
+          <span>
+            Showing <b>{guests.length}</b> of <b>{totalCount}</b> guests
+          </span>
           <div className="flex gap-2">
-            <button disabled className="px-3 py-1 bg-white border border-slate-300 rounded hover:bg-slate-50 disabled:opacity-50">Prev</button>
-            <button className="px-3 py-1 bg-white border border-slate-300 rounded hover:bg-slate-50">Next</button>
+            <button 
+              onClick={() => setPage(p => p - 1)}
+              disabled={!hasPrev || isLoading}
+              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-all font-medium"
+            >
+              <ChevronLeft className="w-3 h-3" /> Previous
+            </button>
+            <button 
+              onClick={() => setPage(p => p + 1)}
+              disabled={!hasNext || isLoading}
+              className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-all font-medium"
+            >
+              Next <ChevronRight className="w-3 h-3" />
+            </button>
           </div>
         </div>
-
       </div>
     </div>
   );
