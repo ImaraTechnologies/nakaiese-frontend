@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'; // Added useRouter for protection
 import { 
   LayoutDashboard, 
   Building2, 
@@ -14,8 +14,10 @@ import {
   X, 
   Bell, 
   Search,
-  ChevronDown 
+  ChevronDown,
+  Loader2 // Added Loader icon
 } from 'lucide-react';
+import { useProfile } from '@/hooks/useProfile';
 
 const NAVIGATION = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -28,6 +30,40 @@ const NAVIGATION = [
 export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  // 1. Hook Integration
+  const { profile, loading, error, logout } = useProfile(); 
+
+  // 2. Security: Protection Effect
+  // If we are done loading and have no profile (or an error), kick user out.
+  // useEffect(() => {
+  //   if (!loading && (!profile || error)) {
+  //     router.push('/login'); // Adjust this route to your actual login path
+  //   }
+  // }, [profile, loading, error, router]);
+
+  // 3. UX: Full Screen Loading State
+  // Prevents the dashboard from flashing empty data while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+          <p className="text-sm font-medium text-slate-500">Loading your workspace...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Fail-safe: If protection hasn't kicked in yet but data is missing, don't render layout
+  if (!profile) return null;
+
+  // Helper to get initials safely
+  const getInitials = () => {
+    if (!profile.first_name) return 'U';
+    return `${profile.first_name[0]}${profile.last_name ? profile.last_name[0] : ''}`.toUpperCase();
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -91,7 +127,11 @@ export default function DashboardLayout({ children }) {
 
           {/* Bottom Actions */}
           <div className="pt-4 mt-4 border-t border-slate-100">
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+            <button 
+              // Assuming your hook provides a logout function, otherwise call your auth service
+              onClick={() => logout ? logout() : router.push('/login')}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            >
               <LogOut className="w-5 h-5" />
               Sign Out
             </button>
@@ -113,13 +153,13 @@ export default function DashboardLayout({ children }) {
               <Menu className="w-6 h-6" />
             </button>
             
-            {/* Search Bar (Hidden on small mobile) */}
+            {/* Search Bar */}
             <div className="hidden sm:flex items-center relative max-w-xs w-full">
               <Search className="w-4 h-4 absolute left-3 text-slate-400" />
               <input 
                 type="text" 
                 placeholder="Search..." 
-                className="pl-9 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-blue-500 w-64 transition-all"
+                className="pl-9 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-blue-500 w-64 transition-all outline-none"
               />
             </div>
           </div>
@@ -133,14 +173,20 @@ export default function DashboardLayout({ children }) {
             
             <div className="h-8 w-px bg-slate-200 mx-1 hidden sm:block"></div>
 
-            {/* Profile Dropdown Trigger */}
+            {/* Profile Dropdown Trigger - Now Dynamic */}
             <button className="flex items-center gap-3 hover:bg-slate-50 p-1.5 rounded-full transition-colors pr-3 border border-transparent hover:border-slate-200">
-              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
-                TA
+              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xs uppercase">
+                {getInitials()}
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-semibold text-slate-900 leading-none">Tahir Admin</p>
-                <p className="text-xs text-slate-500 mt-0.5">Super Admin</p>
+                <p className="text-sm font-semibold text-slate-900 leading-none">
+                  {/* Fallback to 'User' if name is missing */}
+                  {profile.first_name} {profile.last_name}
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {/* Dynamic Role or Email */}
+                  {profile.role || profile.email || 'Admin'}
+                </p>
               </div>
               <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />
             </button>

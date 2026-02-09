@@ -5,6 +5,6 @@ export const getUserProfile = async () => {
     return response.data;
 }
 export const updateUserProfile = async (profileData) => {
-    const response = await localapi.patch('/auth/profile/', profileData);
+    const response = await localapi.patch('/auth/profile/update/', profileData);
     return response.data;
 }

@@ -53,7 +53,7 @@ export async function PATCH(request) {
         }
 
         // 4. Call Django Backend
-        const res = await fetch(`${backendUrl}/dashboard/profile/`, {
+        const res = await fetch(`${backendUrl}/auth/profile/`, {
             method: "PATCH", // Ensure this matches the Django view method
             headers: headers,
             body: body,
