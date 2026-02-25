@@ -10,6 +10,28 @@ export const getCities = async () => {
         throw error;
     }
 };
+export const getCountries = async () => {
+    try {
+        const response = await localapi.get('locations/countries/');
+        return response.data;
+    }
+    catch (error) {
+        console.error("Error fetching countries:", error);
+        throw error;
+    }
+};
+export const getCitiesForVendor = async (countryId) => {
+    try {
+        // We use the 'country__id' filter defined in your ViewSet
+        const params = countryId ? { country__id: countryId } : {};
+        const response = await localapi.get('locations/dropdown/cities', { params });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching cities:", error);
+        throw error;
+    }
+};
+
 export const getCitiesList = async () => {
     try {
         const response = await localapi.get('locations/list/cities');

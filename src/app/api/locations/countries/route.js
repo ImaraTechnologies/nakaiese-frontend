@@ -2,17 +2,12 @@ import { NextResponse } from "next/server";
 
 export async function GET(request) {
     const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const { searchParams } = new URL(request.url);
-    const countryId = searchParams.get('country__id');
-
+    if (!backendUrl) {
+        return NextResponse.json({ error: "Server Config Error" }, { status: 500 });
+    }
     try {
         const locale = request.headers.get('accept-language') || 'en';
-        // Construct the backend URL with the query param
-        let targetUrl = `${backendUrl}/post/cities/dropdown/`;
-        if (countryId) {
-            targetUrl += `?country__id=${countryId}`;
-        }
-
+        const targetUrl = `${backendUrl}/post/cities/countries`;
         const res = await fetch(targetUrl, {
             method: "GET",
             headers: {
@@ -21,9 +16,11 @@ export async function GET(request) {
             },
             cache: 'no-store',
         });
-
         const data = await res.json();
-        return NextResponse.json(data, { status: res.status });
+        if (!res.ok) {
+            return NextResponse.json(data, { status: res.status });
+        }
+        return NextResponse.json(data, { status: 200 });
     } catch (error) {
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }

@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
-import { 
-  Building2, MapPin, Clock, FileText, DollarSign, 
-  ChevronRight, ChevronLeft, Upload, Check, Camera, 
+import {
+  Building2, MapPin, Clock, FileText, DollarSign,
+  ChevronRight, ChevronLeft, Upload, Check, Camera,
   UtensilsCrossed, Loader2
 } from 'lucide-react';
 import { usePropertyWizard } from '@/hooks/usePropertyWizard'; // Adjust path
+import { useCitiesForVendor, useCountries } from '@/hooks/useCities';
 
 // --- CONSTANTS ---
 const STEPS = [
@@ -29,8 +30,8 @@ const InputGroup = ({ label, children, subtitle }) => (
 );
 
 const StyledInput = (props) => (
-  <input 
-    {...props} 
+  <input
+    {...props}
     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
   />
 );
@@ -47,10 +48,9 @@ const StepIndicator = ({ steps, currentStep }) => (
           const Icon = step.icon;
           return (
             <div key={step.id} className="relative z-10 flex flex-col items-center gap-2 bg-slate-900 px-2">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                isActive ? 'bg-blue-600 text-white ring-4 ring-blue-900' : 
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isActive ? 'bg-blue-600 text-white ring-4 ring-blue-900' :
                 isCompleted ? 'bg-green-500 text-white' : 'bg-slate-800 text-slate-500'
-              }`}>
+                }`}>
                 {isCompleted ? <Check size={18} /> : <Icon size={18} />}
               </div>
               <span className={`text-xs font-medium ${isActive ? 'text-blue-400' : 'text-slate-500'}`}>{step.title}</span>
@@ -64,9 +64,13 @@ const StepIndicator = ({ steps, currentStep }) => (
 
 export default function CreatePropertyWizard() {
   const {
-    currentStep, formData, updateField, updateNestedField, 
+    currentStep, formData, updateField, updateNestedField,
     toggleArrayItem, handleImageUpload, nextStep, prevStep, isSubmitting
   } = usePropertyWizard(STEPS.length);
+
+  const { data: citiesData, isLoading: citiesLoading, isError: citiesError } = useCitiesForVendor(formData.location.country);
+  const { data: countriesData, isLoading: countriesLoading, isError: countriesError } = useCountries();
+
 
   const handleSubmit = async () => {
     // API Call logic here
@@ -79,10 +83,10 @@ export default function CreatePropertyWizard() {
 
       <div className="flex-1 w-full max-w-3xl mx-auto -mt-6 mb-12 p-4 z-20">
         <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden flex flex-col min-h-[500px]">
-          
+
           {/* CONTENT AREA */}
           <div className="flex-1 p-8 overflow-y-auto">
-            
+
             {/* --- STEP 1: BASICS --- */}
             {currentStep === 1 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -94,11 +98,10 @@ export default function CreatePropertyWizard() {
                     <button
                       key={type.id}
                       onClick={() => updateField('property_type', type.id)}
-                      className={`p-6 border-2 rounded-xl flex flex-col items-center gap-3 transition-all ${
-                        formData.property_type === type.id 
-                          ? 'border-blue-600 bg-blue-50/50' 
-                          : 'border-slate-100 hover:border-slate-200'
-                      }`}
+                      className={`p-6 border-2 rounded-xl flex flex-col items-center gap-3 transition-all ${formData.property_type === type.id
+                        ? 'border-blue-600 bg-blue-50/50'
+                        : 'border-slate-100 hover:border-slate-200'
+                        }`}
                     >
                       <type.icon className={`w-8 h-8 ${formData.property_type === type.id ? type.color : 'text-slate-400'}`} />
                       <span className="font-bold text-slate-700">{type.label}</span>
@@ -106,14 +109,14 @@ export default function CreatePropertyWizard() {
                   ))}
                 </div>
                 <InputGroup label="Property Title">
-                  <StyledInput 
-                    value={formData.title} 
-                    onChange={(e) => updateField('title', e.target.value)} 
+                  <StyledInput
+                    value={formData.title}
+                    onChange={(e) => updateField('title', e.target.value)}
                     placeholder="e.g. The Grand Hotel"
                   />
                 </InputGroup>
                 <InputGroup label="Description">
-                  <textarea 
+                  <textarea
                     rows={4}
                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none"
                     value={formData.description}
@@ -125,42 +128,112 @@ export default function CreatePropertyWizard() {
             )}
 
             {/* --- STEP 2: LOCATION --- */}
+            {/* --- STEP 2: LOCATION --- */}
             {currentStep === 2 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="grid grid-cols-2 gap-4">
-                  <InputGroup label="Country">
-                    <select className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none">
-                      <option>Select Country...</option>
-                      <option value="sn">Senegal</option>
-                    </select>
+
+                  <InputGroup
+                    label="Country"
+                    subtitle="Select the country of operation"
+                    error={countriesError && "Failed to load countries"}
+                  >
+                    <div className="relative">
+                      <select
+                        className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 appearance-none transition-all ${countriesLoading ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-300'
+                          }`}
+                        value={formData.location.country}
+                        onChange={(e) => {
+                          updateNestedField('location', 'country', e.target.value);
+                          // PRODUCTION GUARD: Reset city selection when country changes
+                          updateNestedField('location', 'city', "");
+                        }}
+                        disabled={countriesLoading}
+                      >
+                        <option value="">{countriesLoading ? "Loading..." : "Select Country..."}</option>
+                        {countriesData?.map((country) => (
+                          <option key={country.id} value={country.id}>
+                            {country.name}
+                          </option>
+                        ))}
+                      </select>
+                      {countriesLoading && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Loader2 size={14} className="animate-spin text-slate-400" />
+                        </div>
+                      )}
+                    </div>
                   </InputGroup>
-                  <InputGroup label="City">
-                    <select className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none">
-                      <option>Select City...</option>
-                      <option value="dk">Dakar</option>
-                    </select>
+
+                  {/* CITY SELECT */}
+                  <InputGroup
+                    label="City"
+                    subtitle="Filterable by country"
+                  >
+                    <div className="relative">
+                      <select
+                        className={`w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 appearance-none transition-all ${(!formData.location.country || citiesLoading) ? 'opacity-50 cursor-not-allowed' : 'hover:border-slate-300'
+                          }`}
+                        value={formData.location.city}
+                        onChange={(e) => updateNestedField('location', 'city', e.target.value)}
+                        // PRODUCTION GUARD: Disable if no country is selected or data is loading
+                        disabled={citiesLoading || !formData.location.country}
+                      >
+                        <option value="">
+                          {!formData.location.country
+                            ? "Choose a country first"
+                            : citiesLoading ? "Fetching local cities..." : "Select City..."}
+                        </option>
+
+                        {Array.isArray(citiesData) && citiesData.map((city) => (
+                          <option key={city.id} value={city.id}>
+                            {city.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      {citiesLoading && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Loader2 size={14} className="animate-spin text-slate-400" />
+                        </div>
+                      )}
+                    </div>
+
+                    {citiesError && (
+                      <p className="text-[10px] text-red-500 font-medium mt-1.5 flex items-center gap-1">
+                        <span className="w-1 h-1 bg-red-500 rounded-full" />
+                        Error loading cities. Please check your connection.
+                      </p>
+                    )}
                   </InputGroup>
                 </div>
+
                 <InputGroup label="Street Address">
-                  <StyledInput 
-                    value={formData.address.street} 
-                    onChange={(e) => updateNestedField('address', 'street', e.target.value)} 
-                    placeholder="123 Main St"
+                  <StyledInput
+                    value={formData.location.street}
+                    onChange={(e) => updateNestedField('location', 'street', e.target.value)}
+                    placeholder="e.g. 123 Almadies Boulevard"
                   />
                 </InputGroup>
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center justify-between">
+
+                {/* GPS DETECTION BUTTON */}
+                <button
+                  type="button"
+                  className="w-full bg-blue-50 p-4 rounded-xl border border-blue-100 flex items-center justify-between group hover:bg-blue-100 transition-all"
+                >
                   <div className="flex items-center gap-3">
-                    <div className="bg-blue-100 p-2 rounded-lg text-blue-600"><MapPin size={20} /></div>
-                    <div className="text-sm text-blue-900">
-                      <p className="font-bold">Auto-detect Location</p>
-                      <p className="text-blue-700 text-xs">Use GPS to set coordinates</p>
+                    <div className="bg-blue-100 p-2 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      <MapPin size={20} />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold text-blue-900">Auto-detect Location</p>
+                      <p className="text-blue-700 text-[11px]">Set precise GPS coordinates</p>
                     </div>
                   </div>
-                  <button className="text-sm font-bold text-blue-600 hover:text-blue-700">Detect</button>
-                </div>
+                  <span className="text-xs font-bold text-blue-600 px-3 py-1 bg-white rounded-lg shadow-sm">Detect</span>
+                </button>
               </div>
             )}
-
             {/* --- STEP 3: OPERATIONS --- */}
             {currentStep === 3 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -176,10 +249,10 @@ export default function CreatePropertyWizard() {
                 ) : (
                   <>
                     <label className="flex items-center gap-3 p-4 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50">
-                      <input 
-                        type="checkbox" 
-                        checked={formData.is_open_24_hours} 
-                        onChange={(e) => updateField('is_open_24_hours', e.target.checked)} 
+                      <input
+                        type="checkbox"
+                        checked={formData.is_open_24_hours}
+                        onChange={(e) => updateField('is_open_24_hours', e.target.checked)}
                         className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500"
                       />
                       <div>
@@ -206,12 +279,12 @@ export default function CreatePropertyWizard() {
                     {AMENITIES.map((item) => (
                       <label key={item} className={`
                         flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-all text-sm
-                        ${formData.amenities.includes(item) 
-                          ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium' 
+                        ${formData.amenities.includes(item)
+                          ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium'
                           : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'}
                       `}>
-                        <input 
-                          type="checkbox" 
+                        <input
+                          type="checkbox"
                           className="rounded text-blue-600 focus:ring-blue-500"
                           checked={formData.amenities.includes(item)}
                           onChange={() => toggleArrayItem('amenities', item)}
@@ -256,7 +329,7 @@ export default function CreatePropertyWizard() {
 
           {/* FOOTER */}
           <div className="p-6 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
-            <button 
+            <button
               onClick={prevStep} disabled={currentStep === 1}
               className="px-6 py-2.5 text-sm font-bold text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed hover:text-slate-900 transition-colors flex items-center gap-2"
             >
@@ -264,7 +337,7 @@ export default function CreatePropertyWizard() {
             </button>
 
             {currentStep === STEPS.length ? (
-              <button 
+              <button
                 onClick={handleSubmit} disabled={isSubmitting}
                 className="px-8 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-200 transition-all flex items-center gap-2"
               >
@@ -272,7 +345,7 @@ export default function CreatePropertyWizard() {
                 Create Property
               </button>
             ) : (
-              <button 
+              <button
                 onClick={nextStep}
                 className="px-8 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl shadow-lg shadow-slate-200 transition-all flex items-center gap-2"
               >

@@ -27,7 +27,7 @@ export const getPropertyById = async (id, locale = 'en') => {
         // 1. Use 'await' (Critical fix: axios returns a Promise)
         // 2. Use 'params' object for cleaner query string handling (?id=...)
         const response = await localapi.get('/properties/retrieve', {
-            params: { id: id }, 
+            params: { id: id },
             headers: {
                 'Accept-Language': locale
             }
@@ -38,29 +38,29 @@ export const getPropertyById = async (id, locale = 'en') => {
 
     } catch (error) {
         console.error("Service Error:", error);
-        
+
         // 4. robust error handling for Axios structure
         const message = error.response?.data?.error || error.message || "Failed to fetch property";
         throw new Error(message);
     }
 };
 
-export async function checkAvailability(propertyId, { 
-    checkin, 
-    checkout, 
-    time, 
-    guests, 
-    rooms, 
+export async function checkAvailability(propertyId, {
+    checkin,
+    checkout,
+    time,
+    guests,
+    rooms,
     locale = 'en' // Default locale handled here
 } = {}) {
 
     try {
         const params = new URLSearchParams();
-        
+
         // --- Common Params ---
         params.append('id', propertyId);
         params.append('guests', guests || 1);
-        
+
         if (checkin) params.append('checkin', checkin);
 
         // --- Conditional Params (Hybrid Logic) ---
@@ -74,7 +74,7 @@ export async function checkAvailability(propertyId, {
         // Ensure this matches the route you created in src/app/api/check-availability/route.js
         const response = await localapi.get(`/properties/search/?${params.toString()}`, {
             headers: {
-                'Accept-Language': locale 
+                'Accept-Language': locale
             }
         });
 
@@ -99,5 +99,18 @@ export const getPropertyInfo = async (locale, searchParamsString) => {
     } catch (error) {
         console.error("API Error fetching property info:", error);
         throw error;
+    }
+};
+
+
+export const propertyService = {
+    createProperty: async (data) => {
+        const response = await localapi.post('/properties', data);
+        return response.data;
+    },
+    // If you want to save drafts as they type
+    saveDraft: async (data) => {
+        const response = await localapi.post('/properties/draft', data);
+        return response.data;
     }
 };
